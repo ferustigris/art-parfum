@@ -1,0 +1,102 @@
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #fffffe;
+    font-family: 'Helvetica Neue', Helvetica, sans-serif;
+    font-size: 3em;
+}
+
+#source.vk {
+    background-color: #1A9CB0;
+}
+
+#source.birthday {
+    background-color: #8E244D;
+}
+
+#source.custom {
+    background-color: #7F993A;
+}
+
+.hashTag {
+    color: #2B587A;
+}
+
+#header {
+    height: 10vh;
+    background-color: #666;
+    color: #fff;
+    box-shadow: 0 0 10px #ddd;
+}
+
+#header h1 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
+    padding: 2vh;
+    font-size: 6vh;
+    margin: 0;
+}
+
+.content {
+    margin: 2vh;
+    height: 86vh;
+}
+
+.content.no_header {
+    height: 96vh;
+}
+
+#image_block {
+    position: relative;
+    overflow: hidden;
+}
+
+#image_block ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+#image_block img {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    outline: 4px solid #eee;
+    outline-offset:-3px;
+    margin: auto;
+}
+
+#news_block {
+    float: right;
+    width: 42%;
+    margin-left: 6vh;
+    overflow: hidden;
+}
+
+#news_block.no_header {
+    margin-top: 0;
+}
+
+#news_block>span {
+    font-size: 0.75em;
+    margin: 0.25em 0;
+}
+
+#source {
+    padding: 0.1em 0.5em;
+    background-color: #39C2D7;
+    color: #fff;
+}
+
+#date {
+    display: block;
+    color: #999;
+}
+
+#news_block p {
+    color: #333;
+    margin: 0.8em 0 0 0;
+    line-height: 1.3em;
+}
