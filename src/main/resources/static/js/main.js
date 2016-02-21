@@ -1,71 +1,52 @@
-        $(document).ready(function () {
-                $.ajax({
-                    url: "data/columns.json",
-                    cache: false,
-                    dataType: "text",
-                    contentType:"application/json",
-                    error: function (result) {
-                        console.log('Receiving columns list failed')
-                    },
-                    success: function (result) {
-                        console.log('Columns list has been gotten')
-                        var json = $.parseJSON(result);
+function productsReceive(result) {
+    console.log('Products have been received')
+    var json = $.parseJSON(result);
+    json.forEach(function(item) {
 
-                        $("#jqGrid").jqGrid({
-                            colModel: json,
-                            viewrecords: true, // show the current page, data rang and total records on the toolbar
-                            width: $(document).width(),
-                            height: $(document).height(),
-                            rowNum: 15,
-                            datatype: 'local',
-                            pager: "#jqGridPager",
-                            caption: "Load live data from stackoverflow"
-                        });
+        asyncReceive("data/salesGroupedByDate.json", function(result) {
+            var sales = $.parseJSON(result);
+            $("#jsGrid").jsGrid("insertItem", item);
+        }, {
+            'code': item.code
+        })
+    })
+}
 
-                        fetchGridData();
+function asyncReceive (url, receiver, data) {
+    $.ajax({
+        url: url,
+        cache: false,
+        dataType: "text",
+        data: data,
+        contentType:"application/json",
+        error: function (result) {
+            console.log('Receiving data from ' + url + ' failed')
+        },
+        success: receiver
+    });
+}
 
-                    }
-                });
+$(document).ready(function () {
+    $("#jsGrid").jsGrid({
+        width: "100%",
+        height: "400px",
 
+        filtering: true,
+        editing: true,
+        sorting: true,
+        paging: true,
 
-            function fetchGridData() {
+        data: [],
 
-                var gridArrayData = [];
-				// show loading message
-				$("#jqGrid")[0].grid.beginReq();
-                $.ajax({
-                    url: "data/data.json",
-                    cache: false,
-                    dataType: "text",
-                    contentType:"application/json",
-                    success: function (result) {
-                        console.log('Data has been received')
-                        var json = $.parseJSON(result);
-                        json.forEach(function(item) {
-                            gridArrayData.push({
-                                code: item.code,
-                                count: item.count,
-                                monday: item.monday,
-                                tuesday: item.tuesday,
-                                balance: item.balance
-                            });
-                        })
-						// set the new data
-						$("#jqGrid").jqGrid('setGridParam', { data: gridArrayData});
-						// hide the show message
-						$("#jqGrid")[0].grid.endReq();
-						// refresh the grid
-						$("#jqGrid").trigger('reloadGrid');
-                    }
-                });
-            }
+        fields: [
+            { name: "code", type: "text", width: 150 },
+            { name: "count", type: "number", width: 50 },
+            { name: "Address", type: "text", width: 200 },
+            { name: "Country", type: "select", items: [], valueField: "Id", textField: "Name" },
+            { name: "Married", type: "checkbox", title: "Is Married", sorting: false },
+            { type: "control" }
+        ]
+    });
 
-            function formatTitle(cellValue, options, rowObject) {
-                return cellValue.substring(0, 50) + "...";
-            };
-
-            function formatLink(cellValue, options, rowObject) {
-                return "<a href='" + cellValue + "'>" + cellValue.substring(0, 25) + "..." + "</a>";
-            };
-
-        });
+    asyncReceive("data/data.json", productsReceive)
+});
