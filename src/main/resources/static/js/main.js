@@ -63,17 +63,48 @@ $(document).ready(function () {
 
                 { name: "store", type: "select", items: stores, valueField: "Id", textField: "Name" },
                 { type: "control" }
-            ]
+            ],
+            onItemDeleted: function(args) {
+                console.log("onItemDeleted")
+                // cancel editing of the row of item with field 'ID' = 0
+                if(args.item.ID === 0) {
+                    args.cancel = true;
+                }
+            },
+            onItemUpdated: function(args) {
+                console.log("onItemUpdated")
+                // cancel editing of the row of item with field 'ID' = 0
+                if(args.item.ID === 0) {
+                    args.cancel = true;
+                }
+            }
+
         });
 
-        $("#detailsDialog").dialog({
+        dialog = $("#detailsDialog").dialog({
             autoOpen: false,
             width: 400,
-            height: 300,
+            height: 350,
             modal: true,
             buttons: {
-              "Create an account": function() {
-                console.log(Creates)
+              "Create an product": function() {
+                item = {
+                    name: $("#new-product-name").val(),
+                    code: $("#new-product-code").val(),
+                    count: parseInt($("#new-product-count").val()),
+                    store: parseInt($("#new-product-store").val()),
+                    d0: 0,
+                    d1: 0,
+                    d2: 0,
+                    d3: 0,
+                    d4: 0,
+                    d5: 0,
+                    d6: 0
+                }
+                console.log("Try to create")
+                console.log(item)
+                $("#jsGrid").jsGrid("insertItem", item);
+                dialog.dialog( "close" );
               },
               Cancel: function() {
                 dialog.dialog( "close" );
@@ -83,27 +114,31 @@ $(document).ready(function () {
                 $("#detailsForm").validate().resetForm();
                 $("#detailsForm").find(".error").removeClass("error");
             }
-        }).dialog( "open" );
+        });
 
-//        $("#detailsForm").validate({
-//            rules: {
-//                name: "required",
-//                age: { required: true, range: [18, 150] },
-//                address: { required: true, minlength: 10 },
-//                country: "required"
-//            },
-//            messages: {
-//                name: "Please enter name",
-//                age: "Please enter valid age",
-//                address: "Please enter address (more than 10 chars)",
-//                country: "Please select country"
-//            },
-//            submitHandler: function() {
-//                formSubmitHandler();
-//            }
-//        });
-//
-//        var formSubmitHandler = $.noop;
+        $( "#add-new-product" ).button().on( "click", function() {
+            dialog.dialog( "open" );
+        });
+
+        $("#detailsForm").validate({
+            rules: {
+                name: "required",
+                code: { required: true, minlength: 2 },
+                count: { required: true, range: [0, 1500] },
+                store: "required"
+            },
+            messages: {
+                name: "Please enter name",
+                code: "Please enter valid code",
+                count: "Please enter count",
+                store: "Please select store"
+            },
+            submitHandler: function() {
+                console.log("Try to submit")
+            }
+        });
+
+        var formSubmitHandler = $.noop;
 //
 //        var showDetailsDialog = function(dialogType, client) {
 //            $("#name").val("dsfdsf");

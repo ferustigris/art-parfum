@@ -2,35 +2,44 @@
 
 <html lang="en">
 <head>
+    <title>Art parfum</title>
     <meta charset="utf-8">
+
     <link rel="stylesheet" href="css/jsgrid.min.css" />
     <link rel="stylesheet" href="css/jsgrid-theme.min.css" />
     <link rel="stylesheet" href="css/jquery-ui.css" />
+    <link rel="stylesheet" href="css/main.css" />
 
     <script type="text/ecmascript" src="js/jquery-1.12.0.js"></script>
     <script type="text/ecmascript" src="js/jsgrid.min.js"></script>
     <script type="text/ecmascript" src="js/jquery-ui.min.js"></script>
     <script type="text/ecmascript" src="js/jquery.validate.min.js"></script>
-
-    <script src="js/main.js"></script>
-    <title>Art parfum</title>
-
+    <script type="text/ecmascript" src="js/main.js"></script>
 </head>
 <body>
     <div style="margin-left:20px">
         <table id="jsGrid"></table>
         <div id="jqGridPager"></div>
     </div>
+    <button id="add-new-product">Create new user</button>
     <div id="detailsDialog">
         <p class="validateTips">All form fields are required.</p>
         <form id="detailsForm">
             <fieldset>
-                <label for="name">Name</label>
-                <input type="text" name="name" id="name" value="Jane Smith" class="text ui-widget-content ui-corner-all">
-                <label for="email">Email</label>
-                <input type="text" name="email" id="email" value="jane@smith.com" class="text ui-widget-content ui-corner-all">
-                <label for="password">Password</label>
-                <input type="password" name="password" id="password" value="xxxxxxx" class="text ui-widget-content ui-corner-all">
+                <label for="new-product-name">Name</label>
+                <input id="new-product-name" type="text" name="name" value="Chanel" class="text ui-widget-content ui-corner-all">
+
+                <label for="new-product-code">Code</label>
+                <input id="new-product-code" type="text" name="code" value="5" class="text ui-widget-content ui-corner-all">
+
+                <label for="new-product-count">Count</label>
+                <input type="text" name="count" id="new-product-count" value="0" class="text ui-widget-content ui-corner-all">
+
+                <select id="new-product-store">
+                    <option value="0">Пункт 1</option>
+                    <option value="1">Пункт 2</option>
+                    <option value="2">Пункт 3</option>
+                </select>
             </fieldset>
         </form>
     </div>
