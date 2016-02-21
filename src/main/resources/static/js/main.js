@@ -5,6 +5,11 @@ function productsReceive(result) {
 
         asyncReceive("data/salesGroupedByDate.json", function(result) {
             var sales = $.parseJSON(result);
+            sales.forEach(function (sale, i) {
+                item['d' + i] = sale.count;
+            });
+
+            console.log(item);
             $("#jsGrid").jsGrid("insertItem", item);
         }, {
             'code': item.code
@@ -27,26 +32,38 @@ function asyncReceive (url, receiver, data) {
 }
 
 $(document).ready(function () {
-    $("#jsGrid").jsGrid({
-        width: "100%",
-        height: "400px",
+    asyncReceive("data/stores.json", function (result) {
+        console.log('Stores have been received')
+        var stores = $.parseJSON(result);
+        $("#jsGrid").jsGrid({
+            width: "100%",
+            height: "400px",
 
-        filtering: true,
-        editing: true,
-        sorting: true,
-        paging: true,
+            filtering: true,
+            editing: true,
+            sorting: true,
+            paging: true,
 
-        data: [],
+            data: [],
 
-        fields: [
-            { name: "code", type: "text", width: 150 },
-            { name: "count", type: "number", width: 50 },
-            { name: "Address", type: "text", width: 200 },
-            { name: "Country", type: "select", items: [], valueField: "Id", textField: "Name" },
-            { name: "Married", type: "checkbox", title: "Is Married", sorting: false },
-            { type: "control" }
-        ]
+            fields: [
+                { name: "code", type: "text", width: 100 },
+                { name: "count", type: "number", width: 70 },
+
+                { name: "d0", type: "number", width: 70 },
+                { name: "d1", type: "number", width: 70 },
+                { name: "d2", type: "number", width: 70 },
+                { name: "d3", type: "number", width: 70 },
+                { name: "d4", type: "number", width: 70 },
+                { name: "d5", type: "number", width: 70 },
+                { name: "d6", type: "number", width: 70 },
+
+                { name: "store", type: "select", items: stores, valueField: "Id", textField: "Name" },
+                { name: "Married", type: "checkbox", title: "Is Married", sorting: false },
+                { type: "control" }
+            ]
+        });
+
+        asyncReceive("data/data.json", productsReceive)
     });
-
-    asyncReceive("data/data.json", productsReceive)
 });

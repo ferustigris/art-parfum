@@ -2,11 +2,10 @@ package com.kuznetsov.parfum.storage;
 
 import com.kuznetsov.parfum.entities.Product;
 import com.kuznetsov.parfum.entities.Sale;
-import org.springframework.web.bind.annotation.RequestParam;
 
-import javax.xml.ws.RequestWrapper;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Store products
@@ -17,6 +16,7 @@ public class ProductsStorage {
     }
 
     public List<Sale> getSalesGroupedByDate(String code) {
-        return Arrays.asList(new Sale());
+        Random r = new Random();
+        return Arrays.asList(new Sale(r.nextInt(1000)), new Sale(r.nextInt(1000)), new Sale(r.nextInt(1000)), new Sale(r.nextInt(1000)));
     }
 }
