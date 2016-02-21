@@ -10,4 +10,10 @@ public class Product {
     public String getName() {
         return "prod1";
     }
+    public Store getStore() {
+        return new Store();
+    }
+    public Long getCount() {
+        return Long.valueOf(13);
+    }
 }

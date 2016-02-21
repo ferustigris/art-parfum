@@ -19,7 +19,7 @@ public class ProductsController {
 
     private ProductsStorage storage = new ProductsStorage();
 
-    @RequestMapping("/data1")
+    @RequestMapping("/data/products.json")
     @ResponseBody()
     public List<Product> getProducts() {
         log.debug("get products request");
