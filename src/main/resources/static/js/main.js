@@ -13,7 +13,8 @@ function productsReceive(result) {
             item.store = item.store.id;
             $("#jsGrid").jsGrid("insertItem", item);
         }, {
-            'code': item.code
+            'code': item.code,
+            'days': $('#period').val()
         })
     })
 }
@@ -40,19 +41,35 @@ function asyncReceive (url, receiver, data) {
 }
 
 $(document).ready(function () {
+
+    $(function() {
+        $( "#tabs" ).tabs({
+            beforeLoad: function( event, ui ) {
+                ui.jqXHR.fail(function() {
+                    ui.panel.html("Couldn't load this tab");
+                });
+            }
+        });
+    });
+
     asyncReceive("data/stores.json", function (result) {
         console.log('Stores have been received')
         var stores = $.parseJSON(result);
         $("#jsGrid").jsGrid({
             width: "100%",
-            height: window.innerHeight,
+            height: window.innerHeight - 200,
 
             filtering: true,
             editing: true,
             sorting: true,
             paging: true,
-
+            autoload: true,
             data: [],
+            controller: {
+                loadData: function(filter) {
+                    return asyncReceive("/data/products.json", productsReceive, filter)
+                }
+            },
 
             fields: [
                 { name: "code", type: "text", width: 100 },
@@ -131,7 +148,5 @@ $(document).ready(function () {
                 console.log("Try to submit")
             }
         });
-
-        asyncReceive("/data/products.json", productsReceive)
     });
 });

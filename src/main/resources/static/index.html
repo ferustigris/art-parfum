@@ -1,48 +1,65 @@
 <!DOCTYPE html>
 
 <html lang="en">
-<head>
-    <title>Art parfum</title>
-    <meta charset="utf-8">
+    <head>
+        <title>Art parfum</title>
+        <meta charset="utf-8">
 
-    <link rel="stylesheet" href="css/jsgrid.min.css" />
-    <link rel="stylesheet" href="css/jsgrid-theme.min.css" />
-    <link rel="stylesheet" href="css/jquery-ui.css" />
-    <link rel="stylesheet" href="css/main.css" />
+        <link rel="stylesheet" href="css/jsgrid.min.css" />
+        <link rel="stylesheet" href="css/jsgrid-theme.min.css" />
+        <link rel="stylesheet" href="css/jquery-ui.css" />
+        <link rel="stylesheet" href="css/main.css" />
 
-    <script type="text/ecmascript" src="js/jquery-1.12.0.js"></script>
-    <script type="text/ecmascript" src="js/jsgrid.min.js"></script>
-    <script type="text/ecmascript" src="js/jquery-ui.min.js"></script>
-    <script type="text/ecmascript" src="js/jquery.validate.min.js"></script>
-    <script type="text/ecmascript" src="js/main.js"></script>
-</head>
-<body>
-    <div style="margin-left:20px">
-        <table id="jsGrid"></table>
-        <div id="jqGridPager"></div>
-    </div>
-    <button id="add-new-product">Create new product</button>
-    <div id="detailsDialog">
-        <p class="validateTips">All form fields are required.</p>
-        <form id="detailsForm">
-            <fieldset>
-                <label for="new-product-name">Name</label>
-                <input id="new-product-name" type="text" name="name" value="Chanel" class="text ui-widget-content ui-corner-all">
+        <script type="text/ecmascript" src="js/jquery-1.12.0.js"></script>
+        <script type="text/ecmascript" src="js/jsgrid.min.js"></script>
+        <script type="text/ecmascript" src="js/jquery-ui.min.js"></script>
+        <script type="text/ecmascript" src="js/jquery.validate.min.js"></script>
+        <script type="text/ecmascript" src="js/main.js"></script>
+    </head>
+    <body>
 
-                <label for="new-product-code">Code</label>
-                <input id="new-product-code" type="text" name="code" value="5" class="text ui-widget-content ui-corner-all">
+        <div id="tabs">
+            <ul>
+                <li><a href="#edit">Edit</a></li>
+                <li><a href="ajax/content1.html">To order</a></li>
+                <li><a href="ajax/content2.html">Report</a></li>
+            </ul>
+            <div id="edit">
+                <button id="add-new-product">Create new product</button>
+                <form action="#">
+                    <fieldset>
+                        <select name="period" id="period">
+                            <option selected="selected" value="7">Week</option>
+                            <option value="30">Month</option>
+                        </select>
+                    </fieldset>
+                    </form>
+                <div>
+                    <table id="jsGrid"></table>
+                </div>
+            </div>
+        </div>
+        <div id="detailsDialog">
+            <p class="validateTips">All form fields are required.</p>
+            <form id="detailsForm">
+                <fieldset>
+                    <label for="new-product-name">Name</label>
+                    <input id="new-product-name" type="text" name="name" value="Chanel" class="text ui-widget-content ui-corner-all">
 
-                <label for="new-product-count">Count</label>
-                <input type="text" name="count" id="new-product-count" value="0" class="text ui-widget-content ui-corner-all">
+                    <label for="new-product-code">Code</label>
+                    <input id="new-product-code" type="text" name="code" value="5" class="text ui-widget-content ui-corner-all">
 
-                <select id="new-product-store">
-                    <option value="0">Пункт 1</option>
-                    <option value="1">Пункт 2</option>
-                    <option value="2">Пункт 3</option>
-                </select>
-            </fieldset>
-        </form>
-    </div>
-</body>
+                    <label for="new-product-count">Count</label>
+                    <input type="text" name="count" id="new-product-count" value="0" class="text ui-widget-content ui-corner-all">
+
+                    <select id="new-product-store">
+                        <option value="0">Пункт 1</option>
+                        <option value="1">Пункт 2</option>
+                        <option value="2">Пункт 3</option>
+                    </select>
+                </fieldset>
+            </form>
+        </div>
+    </body>
 
 </html>
