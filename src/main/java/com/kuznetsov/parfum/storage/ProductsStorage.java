@@ -42,4 +42,12 @@ public class ProductsStorage {
                 new Sale(r.nextInt(1000))
         );
     }
+
+    public Product createNew(Product product) {
+        return product;
+    }
+
+    public Product update(Product product) {
+        return new Product();
+    }
 }

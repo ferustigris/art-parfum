@@ -33,4 +33,27 @@ public class ProductsController {
         return storage.getSalesGroupedByDate(code);
     }
 
+    @RequestMapping("/data/addNewProduct.json")
+    @ResponseBody()
+    public Product addNewProduct(@RequestParam("name") String name, @RequestParam("code") String code, @RequestParam("count") Long count, @RequestParam("store") Long store) {
+        Product product = new Product();
+        log.debug("request for creating new product " + product);
+        return storage.createNew(product);
+    }
+
+    @RequestMapping("/data/removeProduct.json")
+    @ResponseBody
+    public String removeProduct(@RequestParam("code") String code) {
+        log.debug("request for removing product with code " + code);
+        return "";
+    }
+
+    @RequestMapping("/data/updateProduct.json")
+    @ResponseBody()
+    public Product updateProduct(@RequestParam("name") String name, @RequestParam("code") String code, @RequestParam("count") Long count) {
+        Product product = new Product();
+        log.debug("request for creating new product " + product);
+        return storage.update(product);
+    }
+
 }

@@ -18,6 +18,13 @@ function productsReceive(result) {
     })
 }
 
+function addedProductReceive(result) {
+    console.log('Product have been added')
+    var product = $.parseJSON(result);
+    $("#jsGrid").jsGrid("insertItem", product);
+    dialog.dialog( "close" );
+}
+
 function asyncReceive (url, receiver, data) {
     $.ajax({
         url: url,
@@ -38,7 +45,7 @@ $(document).ready(function () {
         var stores = $.parseJSON(result);
         $("#jsGrid").jsGrid({
             width: "100%",
-            height: "400px",
+            height: window.innerHeight,
 
             filtering: true,
             editing: true,
@@ -66,19 +73,12 @@ $(document).ready(function () {
             ],
             onItemDeleted: function(args) {
                 console.log("onItemDeleted")
-                // cancel editing of the row of item with field 'ID' = 0
-                if(args.item.ID === 0) {
-                    args.cancel = true;
-                }
+                asyncReceive("/data/removeProduct.json", function () {}, args.item)
             },
             onItemUpdated: function(args) {
                 console.log("onItemUpdated")
-                // cancel editing of the row of item with field 'ID' = 0
-                if(args.item.ID === 0) {
-                    args.cancel = true;
-                }
+                asyncReceive("/data/updateProduct.json", function () {}, args.item)
             }
-
         });
 
         dialog = $("#detailsDialog").dialog({
@@ -92,19 +92,13 @@ $(document).ready(function () {
                     name: $("#new-product-name").val(),
                     code: $("#new-product-code").val(),
                     count: parseInt($("#new-product-count").val()),
-                    store: parseInt($("#new-product-store").val()),
-                    d0: 0,
-                    d1: 0,
-                    d2: 0,
-                    d3: 0,
-                    d4: 0,
-                    d5: 0,
-                    d6: 0
+                    store: parseInt($("#new-product-store").val())
                 }
-                console.log("Try to create")
+
+                console.log("Try to create new product...")
                 console.log(item)
-                $("#jsGrid").jsGrid("insertItem", item);
-                dialog.dialog( "close" );
+
+                asyncReceive("/data/addNewProduct.json", addedProductReceive, item)
               },
               Cancel: function() {
                 dialog.dialog( "close" );
@@ -137,39 +131,6 @@ $(document).ready(function () {
                 console.log("Try to submit")
             }
         });
-
-        var formSubmitHandler = $.noop;
-//
-//        var showDetailsDialog = function(dialogType, client) {
-//            $("#name").val("dsfdsf");
-////            $("#age").val(client.Age);
-////            $("#address").val(client.Address);
-////            $("#country").val(client.Country);
-////            $("#married").prop("checked", client.Married);
-//
-//            formSubmitHandler = function() {
-//                saveClient(client, dialogType === "Add");
-//            };
-//
-//            $("#detailsDialog").dialog("option", "title", dialogType + " Client")
-//                    .dialog("open");
-//        };
-//
-//        var saveClient = function(client, isNew) {
-//            $.extend(client, {
-//                Name: $("#name").val(),
-//                Age: parseInt($("#age").val(), 10),
-//                Address: $("#address").val(),
-//                Country: parseInt($("#country").val(), 10),
-//                Married: $("#married").is(":checked")
-//            });
-//
-//            $("#jsGrid").jsGrid(isNew ? "insertItem" : "updateItem", client);
-//
-//            $("#detailsDialog").dialog("close");
-//        };
-
-        //showDetailsDialog("Edit");
 
         asyncReceive("/data/products.json", productsReceive)
     });
