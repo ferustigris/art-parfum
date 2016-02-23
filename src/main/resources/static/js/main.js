@@ -64,6 +64,7 @@ $(document).ready(function () {
             sorting: true,
             paging: true,
             autoload: true,
+
             data: [],
             controller: {
                 loadData: function(filter) {

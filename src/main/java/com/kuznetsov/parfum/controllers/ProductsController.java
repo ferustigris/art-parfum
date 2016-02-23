@@ -2,7 +2,9 @@ package com.kuznetsov.parfum.controllers;
 
 import com.kuznetsov.parfum.entities.Product;
 import com.kuznetsov.parfum.entities.Sale;
+import com.kuznetsov.parfum.entities.Store;
 import com.kuznetsov.parfum.storage.ProductsStorage;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -17,7 +19,8 @@ import org.slf4j.LoggerFactory;
 public class ProductsController {
     private Logger log = LoggerFactory.getLogger(ProductsController.class);
 
-    private ProductsStorage storage = new ProductsStorage();
+    @Autowired
+    private ProductsStorage storage;
 
     @RequestMapping("/data/products.json")
     @ResponseBody()
@@ -36,7 +39,7 @@ public class ProductsController {
     @RequestMapping("/data/addNewProduct.json")
     @ResponseBody()
     public Product addNewProduct(@RequestParam("name") String name, @RequestParam("code") String code, @RequestParam("count") Long count, @RequestParam("store") Long store) {
-        Product product = new Product();
+        Product product = new Product(code, name, count, new Store());
         log.debug("request for creating new product " + product);
         return storage.createNew(product);
     }
@@ -51,7 +54,7 @@ public class ProductsController {
     @RequestMapping("/data/updateProduct.json")
     @ResponseBody()
     public Product updateProduct(@RequestParam("name") String name, @RequestParam("code") String code, @RequestParam("count") Long count) {
-        Product product = new Product();
+        Product product = new Product(code, name, count, new Store());
         log.debug("request for creating new product " + product);
         return storage.update(product);
     }
