@@ -1,5 +1,3 @@
-
-
 function addedProductReceive(result) {
     console.log('Product have been added')
     var product = $.parseJSON(result);
@@ -21,21 +19,50 @@ function asyncReceive (url, receiver, data) {
     });
 }
 
-$(document).ready(function () {
+function getDateInThePast(daysAgo) {
+    var currentDate = new Date();
+    return new Date(currentDate.getTime() - daysAgo * 24 * 60 * 60 * 1000);
+}
 
-    $(function() {
-        $( "#tabs" ).tabs({
-            beforeLoad: function( event, ui ) {
-                ui.jqXHR.fail(function() {
-                    ui.panel.html("Couldn't load this tab");
-                });
-            }
-        });
-    });
+function getDaysBetween(d) {
+    var currentDate = new Date();
+    return parseInt((currentDate.getTime() - d) / (24 * 60 * 60 * 1000));
+}
+
+$(document).ready(function () {
 
     asyncReceive("data/stores.json", function (result) {
         console.log('Stores have been received')
         var stores = $.parseJSON(result);
+
+        // create fields in the table
+        var fields = [
+            { name: "code", type: "text", width: 100 },
+            { name: "count", type: "number", width: 70 }
+        ];
+
+        for(i = $('#period').val() - 1; i >= 0 ; --i) {
+            var d = getDateInThePast(i)
+            fields.push({ name: "d" + i, title: d.toDateString(), type: "number", width: 70 });
+        };
+
+        $(function() {
+            $( "#tabs" ).tabs({
+                beforeLoad: function( event, ui ) {
+                    ui.jqXHR.fail(function() {
+                        ui.panel.html("Couldn't load this tab");
+                    });
+                }
+            });
+        });
+
+        fields.push(
+            { name: "balance", type: "number", width: 70 },
+            { name: "store", type: "select", items: stores, valueField: "id", textField: "name" },
+            { type: "control" }
+        );
+
+        // create table
         $("#jsGrid").jsGrid({
             width: "100%",
             height: window.innerHeight - 200,
@@ -51,21 +78,23 @@ $(document).ready(function () {
                 loadData: function(filter) {
                     return asyncReceive("/data/products.json", function (result) {
                         console.log('Products have been received')
-                        var json = $.parseJSON(result);
-                        json.forEach(function(item) {
+                        var products = $.parseJSON(result);
+                        products.forEach(function(item) {
                             stores.forEach(function(store) {
-                                asyncReceive("data/salesGroupedByDate.json", function(result) {
+                                item.store = store.id;
+                                asyncReceive("data/sales.json", function(result) {
                                     var sales = $.parseJSON(result);
-                                    sales.forEach(function (sale, i) {
+                                    sales.forEach(function(sale) {
+                                        var i = getDaysBetween(sale.date);
                                         item['d' + i] = sale.count;
                                     });
-                                    item.store = store.id;
+                                    console.log("edit item");
                                     console.log(item);
                                     $("#jsGrid").jsGrid("insertItem", item);
                                 }, {
-                                    'code': item.code,
-                                    'days': $('#period').val(),
-                                    'store': store.id
+                                    'product': item.id,
+                                    'date': getDateInThePast(i).getTime(),
+                                    'store': item.store
                                 })
                             })
                         })
@@ -73,23 +102,7 @@ $(document).ready(function () {
                 }
             },
 
-            fields: [
-                { name: "code", type: "text", width: 100 },
-                { name: "count", type: "number", width: 70 },
-
-                { name: "d0", type: "number", width: 70 },
-                { name: "d1", type: "number", width: 70 },
-                { name: "d2", type: "number", width: 70 },
-                { name: "d3", type: "number", width: 70 },
-                { name: "d4", type: "number", width: 70 },
-                { name: "d5", type: "number", width: 70 },
-                { name: "d6", type: "number", width: 70 },
-
-                { name: "balance", type: "number", width: 70 },
-
-                { name: "store", type: "select", items: stores, valueField: "id", textField: "name" },
-                { type: "control" }
-            ],
+            fields: fields,
             onItemDeleted: function(args) {
                 console.log("onItemDeleted");
                 asyncReceive("/data/removeProduct.json", function () {}, args.item);
@@ -102,8 +115,8 @@ $(document).ready(function () {
                             console.log("sale updated");
                         }, {
                             'product': args.item.id,
-                            'store': args.store,
-                            'day': i + 1 - $('#period').val(),
+                            'store': args.item.store,
+                            'day': i,
                             'count': args.item['d' + i]
                         });
                     }

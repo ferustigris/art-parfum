@@ -3,10 +3,13 @@ package com.kuznetsov.parfum.storage;
 import com.kuznetsov.parfum.entities.Product;
 import com.kuznetsov.parfum.entities.Sale;
 import com.kuznetsov.parfum.entities.Store;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
@@ -16,7 +19,7 @@ import java.util.Random;
 @Component
 @Transactional
 public class ProductsStorage {
-    Random r = new Random();
+    private Logger log = LoggerFactory.getLogger(ProductsStorage.class);
     private final StoresRepository storesRepo;
     private final ProductsRepository productsRepository;
     private final SalesRepository salesRepository;
@@ -28,13 +31,13 @@ public class ProductsStorage {
         this.salesRepository = salesRepository;
     }
 
-     public List<Product> getProducts(Long store) {
+    public List<Product> getProducts(Long store) {
         return productsRepository.findAll();
     }
 
-    public List<Sale> getSalesGroupedByDate(String code, Long days, Long storeId) {
-        Product product = productsRepository.findByCode(code);
-        return salesRepository.findByProductIdAndStoreId(product.getId(), storeId);
+    public Sale getSale(Long productId, Date date, Long storeId) {
+        log.debug("getSale with " + date + productId + storeId);
+        return salesRepository.findByProductIdAndStoreIdAndDate(productId, storeId, date);
     }
 
     public Product createNew(Product product) {
@@ -54,5 +57,26 @@ public class ProductsStorage {
 
     public List<Store> getStores() {
         return storesRepo.findAll();
+    }
+
+    public Sale updateSale(Long productId, Long storeId, Date d, Long count) {
+        Sale sale = salesRepository.findByProductIdAndStoreIdAndDate(productId, storeId, d);
+        if (sale == null) {
+            return addNewSale(productId, storeId, d, count);
+        }
+        sale.setCount(count);
+        return salesRepository.save(sale);
+    }
+
+    private Sale addNewSale(Long productId, Long storeId, Date d, Long count) {
+        Product product = productsRepository.findById(productId);
+        Store store = storesRepo.findById(storeId);
+        Sale sale = new Sale(store, product, d, count);
+        return salesRepository.save(sale);
+    }
+
+    public List<Sale> getSales(Long productId, Long storeId) {
+        return salesRepository.findByProductIdAndStoreId(productId, storeId);
+
     }
 }

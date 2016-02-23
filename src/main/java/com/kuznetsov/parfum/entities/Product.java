@@ -32,12 +32,6 @@ public class Product {
     public String getName() {
         return name;
     }
-    public Store getStore() {
-        return null;
-    }
-    public Long getCount() {
-        return Long.valueOf(0);
-    }
 
     public Long getId() {
         return id;

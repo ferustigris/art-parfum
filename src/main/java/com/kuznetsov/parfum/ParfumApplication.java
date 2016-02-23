@@ -8,15 +8,11 @@ import org.springframework.context.ConfigurableApplicationContext;
 
 @SpringBootApplication
 public class ParfumApplication {
-    int i;
-
     private static final Logger logger = LoggerFactory.getLogger(ParfumApplication.class);
 
     public static void main(String[] args) {
         logger.debug("Started!");
         SpringApplication.run(ParfumApplication.class, args);
-
     }
-
 
 }

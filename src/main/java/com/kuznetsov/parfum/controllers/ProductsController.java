@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Date;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,11 +37,18 @@ public class ProductsController {
         return storage.getStores();
     }
 
-    @RequestMapping("/data/salesGroupedByDate.json")
+    @RequestMapping("/data/sale.json")
     @ResponseBody()
-    public List<Sale> getSalesGroupedByDate(@RequestParam("code") String code, @RequestParam("days") Long days, @RequestParam("store") Long storeId) {
-        log.debug("get getSalesGroupedByDate request for " + code);
-        return storage.getSalesGroupedByDate(code, days, storeId);
+    public Sale getSales(@RequestParam("product") Long productId, @RequestParam("date") Long date, @RequestParam("store") Long storeId) {
+        log.debug("getSale request");
+        return storage.getSale(productId, new Date(date), storeId);
+    }
+
+    @RequestMapping("/data/sales.json")
+    @ResponseBody()
+    public List<Sale> getSales(@RequestParam("product") Long productId, @RequestParam("store") Long storeId) {
+        log.debug("getSales request");
+        return storage.getSales(productId, storeId);
     }
 
     @RequestMapping("/data/addNewProduct.json")
@@ -70,9 +78,11 @@ public class ProductsController {
 
     @RequestMapping("/data/updateSale.json")
     @ResponseBody()
-    public String updateSale(@RequestParam("product") Long productId, @RequestParam("store") Long storeId, @RequestParam("day") Long day, @RequestParam("count") Long count) {
+    public Sale updateSale(@RequestParam("product") Long productId, @RequestParam("store") Long storeId, @RequestParam("day") Long day, @RequestParam("count") Long count) {
         log.debug("request for sale");
-        return "";
+        Date d = new Date();
+        d.setTime(d.getTime() - day * 24 * 60 * 60 * 1000);
+        return  storage.updateSale(productId, storeId, d, count);
     }
 
 }

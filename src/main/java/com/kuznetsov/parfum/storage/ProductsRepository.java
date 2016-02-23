@@ -9,4 +9,5 @@ public interface ProductsRepository extends Repository<Product, Long> {
     List<Product> findAll();
     <S extends Product> S save(Product p);
     Product findByCode(String code);
+    Product findById(Long productId);
 }

@@ -1,5 +1,8 @@
 package com.kuznetsov.parfum.entities;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.kuznetsov.parfum.controllers.PlaneDateSerializer;
+
 import javax.persistence.*;
 import java.util.Date;
 
@@ -26,13 +29,18 @@ public class Sale {
     private Double prise;
 
     @Column
+    @Temporal(TemporalType.DATE)
+    @JsonSerialize(using = PlaneDateSerializer.class)
     private Date date;
 
-    public Sale() {
+    public Sale(Store store, Product product, Date date, Long count) {
+        this.store = store;
+        this.product = product;
+        this.count = count;
+        this.date = date;
     }
 
-    public Sale(long count) {
-        this.count = Long.valueOf(count);
+    public Sale() {
     }
 
     public Store getStore() {
@@ -53,5 +61,9 @@ public class Sale {
 
     public Long getCount() {
         return count;
+    }
+
+    public void setCount(Long count) {
+        this.count = count;
     }
 }
