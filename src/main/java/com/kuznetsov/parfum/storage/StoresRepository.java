@@ -5,6 +5,7 @@ import org.springframework.data.repository.Repository;
 
 import java.util.List;
 
-public interface StoresRepo extends Repository<Store, Long> {
+public interface StoresRepository extends Repository<Store, Long> {
     List<Store> findAll();
+    Store findById(Long storeId);
 }

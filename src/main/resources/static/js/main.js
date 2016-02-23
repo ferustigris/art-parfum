@@ -1,23 +1,4 @@
-function productsReceive(result) {
-    console.log('Products have been received')
-    var json = $.parseJSON(result);
-    json.forEach(function(item) {
 
-        asyncReceive("data/salesGroupedByDate.json", function(result) {
-            var sales = $.parseJSON(result);
-            sales.forEach(function (sale, i) {
-                item['d' + i] = sale.count;
-            });
-            console.log(item);
-
-            item.store = item.store.id;
-            $("#jsGrid").jsGrid("insertItem", item);
-        }, {
-            'code': item.code,
-            'days': $('#period').val()
-        })
-    })
-}
 
 function addedProductReceive(result) {
     console.log('Product have been added')
@@ -68,7 +49,27 @@ $(document).ready(function () {
             data: [],
             controller: {
                 loadData: function(filter) {
-                    return asyncReceive("/data/products.json", productsReceive, filter)
+                    return asyncReceive("/data/products.json", function (result) {
+                        console.log('Products have been received')
+                        var json = $.parseJSON(result);
+                        json.forEach(function(item) {
+                            stores.forEach(function(store) {
+                                asyncReceive("data/salesGroupedByDate.json", function(result) {
+                                    var sales = $.parseJSON(result);
+                                    sales.forEach(function (sale, i) {
+                                        item['d' + i] = sale.count;
+                                    });
+                                    item.store = store.id;
+                                    console.log(item);
+                                    $("#jsGrid").jsGrid("insertItem", item);
+                                }, {
+                                    'code': item.code,
+                                    'days': $('#period').val(),
+                                    'store': store.id
+                                })
+                            })
+                        })
+                    }, filter)
                 }
             },
 
@@ -86,16 +87,27 @@ $(document).ready(function () {
 
                 { name: "balance", type: "number", width: 70 },
 
-                { name: "store", type: "select", items: stores, valueField: "Id", textField: "Name" },
+                { name: "store", type: "select", items: stores, valueField: "id", textField: "name" },
                 { type: "control" }
             ],
             onItemDeleted: function(args) {
-                console.log("onItemDeleted")
-                asyncReceive("/data/removeProduct.json", function () {}, args.item)
+                console.log("onItemDeleted");
+                asyncReceive("/data/removeProduct.json", function () {}, args.item);
             },
             onItemUpdated: function(args) {
-                console.log("onItemUpdated")
-                asyncReceive("/data/updateProduct.json", function () {}, args.item)
+                console.log("onItemUpdated");
+                asyncReceive("/data/updateProduct.json", function () {
+                    for(i = 0; i < $('#period').val(); ++i) {
+                        asyncReceive("/data/updateSale.json", function () {
+                            console.log("sale updated");
+                        }, {
+                            'product': args.item.id,
+                            'store': args.store,
+                            'day': i + 1 - $('#period').val(),
+                            'count': args.item['d' + i]
+                        });
+                    }
+                }, args.item);
             }
         });
 

@@ -1,20 +1,29 @@
 package com.kuznetsov.parfum.entities;
 
+import javax.persistence.*;
+
 /**
  * Represents 1 product
  */
+@Entity
+@Table(name = "Products")
 public class Product {
 
-    private String code;
-    private String name;
-    private Long count;
-    private Store store;
+    @Id
+    @GeneratedValue
+    private Long id;
 
-    public Product(String code, String name, long count, Store store) {
+    @Column
+    private String code;
+    @Column
+    private String name;
+
+    public Product() {
+    }
+
+    public Product(String code, String name) {
         this.code = code;
         this.name = name;
-        this.count = count;
-        this.store = store;
     }
 
     public String getCode() {
@@ -24,18 +33,13 @@ public class Product {
         return name;
     }
     public Store getStore() {
-        return store;
+        return null;
     }
     public Long getCount() {
-        return count;
+        return Long.valueOf(0);
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (o != null) {
-            Product p = (Product)o;
-            return p.code.equals(code);
-        }
-        return false;
+    public Long getId() {
+        return id;
     }
 }
