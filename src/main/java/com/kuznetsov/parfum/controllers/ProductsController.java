@@ -53,7 +53,7 @@ public class ProductsController {
 
     @RequestMapping("/data/addNewProduct.json")
     @ResponseBody()
-    public Product addNewProduct(@RequestParam("name") String name, @RequestParam("code") String code, @RequestParam("count") Long count, @RequestParam("store") Long store) {
+    public Product addNewProduct(@RequestParam("name") String name, @RequestParam("code") String code) {
         Product product = new Product(code, name);
         log.debug("request for creating new product " + product);
         return storage.createNew(product);

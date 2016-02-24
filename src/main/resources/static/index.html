@@ -26,7 +26,7 @@
             </ul>
             <div id="edit">
                 <form action="#">
-                    <fieldset toolbar="toolbar"  class="ui-widget-header ui-corner-all">
+                    <fieldset id="toolbar"  class="ui-widget-header ui-corner-all">
                         <button id="add-new-product">Create new product</button>
                         <select name="period" id="period">
                             <option selected="selected" value="7">Week</option>
@@ -49,15 +49,6 @@
 
                     <label for="new-product-code">Code</label>
                     <input id="new-product-code" type="text" name="code" value="5" class="text ui-widget-content ui-corner-all">
-
-                    <label for="new-product-count">Count</label>
-                    <input type="text" name="count" id="new-product-count" value="0" class="text ui-widget-content ui-corner-all">
-
-                    <select id="new-product-store">
-                        <option value="0">Пункт 1</option>
-                        <option value="1">Пункт 2</option>
-                        <option value="2">Пункт 3</option>
-                    </select>
                 </fieldset>
             </form>
         </div>

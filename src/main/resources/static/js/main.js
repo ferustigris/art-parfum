@@ -78,23 +78,21 @@ function loadStore(store) {
                     console.log('Products have been received');
                     var products = $.parseJSON(result);
                     products.forEach(function(item) {
-                        //stores.forEach(function(store) {
-                            asyncReceive("data/sales.json", function(result) {
-                                var sales = $.parseJSON(result);
-                                sales.forEach(function(sale) {
-                                    var i = getDaysBetween(sale.date);
-                                    item['d' + i] = sale.count;
-                                });
-                                console.log("edit item");
-                                console.log(item);
-                                item.store = store;
-                                $("#jsGrid").jsGrid("insertItem", item);
-                            }, {
-                                'product': item.id,
-                                'date': getDateInThePast(i).getTime(),
-                                'store': store
-                            })
-                        //})
+                        asyncReceive("data/sales.json", function(result) {
+                            var sales = $.parseJSON(result);
+                            sales.forEach(function(sale) {
+                                var i = getDaysBetween(sale.date);
+                                item['d' + i] = sale.count;
+                            });
+                            console.log("edit item");
+                            console.log(item);
+                            item.store = store;
+                            $("#jsGrid").jsGrid("insertItem", item);
+                        }, {
+                            'product': item.id,
+                            'date': getDateInThePast(i).getTime(),
+                            'store': store
+                        })
                     })
                 }, filter)
             }
@@ -113,7 +111,7 @@ function loadStore(store) {
                         console.log("sale updated");
                     }, {
                         'product': args.item.id,
-                        'store': args.item.store,
+                        'store': store,
                         'day': i,
                         'count': args.item['d' + i]
                     });
@@ -132,9 +130,8 @@ function loadStore(store) {
             item = {
                 name: $("#new-product-name").val(),
                 code: $("#new-product-code").val(),
-                count: parseInt($("#new-product-count").val()),
-                store: parseInt($("#new-product-store").val())
-            }
+                store: store
+            };
 
             console.log("Try to create new product...")
             console.log(item)
