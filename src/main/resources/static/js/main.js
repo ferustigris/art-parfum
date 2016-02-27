@@ -74,7 +74,7 @@ function loadStore(store) {
         controller: {
             loadData: function(filter) {
                 filter.store = store;
-                return asyncReceive("/data/products.json", function (result) {
+                return asyncReceive("data/products.json", function (result) {
                     console.log('Products have been received');
                     var products = $.parseJSON(result);
                     products.forEach(function(item) {
@@ -101,13 +101,13 @@ function loadStore(store) {
         fields: fields,
         onItemDeleted: function(args) {
             console.log("onItemDeleted");
-            asyncReceive("/data/removeProduct.json", function () {}, args.item);
+            asyncReceive("data/removeProduct.json", function () {}, args.item);
         },
         onItemUpdated: function(args) {
             console.log("onItemUpdated");
-            asyncReceive("/data/updateProduct.json", function () {
+            asyncReceive("data/updateProduct.json", function () {
                 for(i = 0; i < $('#period').val(); ++i) {
-                    asyncReceive("/data/updateSale.json", function () {
+                    asyncReceive("data/updateSale.json", function () {
                         console.log("sale updated");
                     }, {
                         'product': args.item.id,
@@ -136,7 +136,7 @@ function loadStore(store) {
             console.log("Try to create new product...")
             console.log(item)
 
-            asyncReceive("/data/addNewProduct.json", addedProductReceive, item)
+            asyncReceive("data/addNewProduct.json", addedProductReceive, item)
           },
           Cancel: function() {
             dialog.dialog( "close" );
