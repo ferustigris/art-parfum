@@ -46,9 +46,9 @@ public class ProductsController {
 
     @RequestMapping("/data/sales.json")
     @ResponseBody()
-    public List<Sale> getSales(@RequestParam("product") Long productId, @RequestParam("store") Long storeId) {
+    public Sales getSales(@RequestParam("product") Long productId, @RequestParam("store") Long storeId) {
         log.debug("getSales request");
-        return storage.getSales(productId, storeId);
+        return new Sales(storage.getSales(productId, storeId), storage.getBalance(productId, storeId));
     }
 
     @RequestMapping("/data/addNewProduct.json")
@@ -70,7 +70,7 @@ public class ProductsController {
 
     @RequestMapping("/data/updateProduct.json")
     @ResponseBody()
-    public Product updateProduct(@RequestParam("name") String name, @RequestParam("code") String code, @RequestParam("count") Long count) {
+    public Product updateProduct(@RequestParam("name") String name, @RequestParam("code") String code, @RequestParam("input") Long input) {
         Product product = new Product(code, name);
         log.debug("request for creating new product " + product);
         return storage.update(product);
@@ -85,4 +85,21 @@ public class ProductsController {
         return  storage.updateSale(productId, storeId, d, count);
     }
 
+    private class Sales {
+        public List<Sale> getSales() {
+            return sales;
+        }
+
+        public Long getBalance() {
+            return balance;
+        }
+
+        List<Sale> sales;
+        Long balance;
+
+        public Sales(List<Sale> sales, Long balance) {
+            this.sales = sales;
+            this.balance = balance;
+        }
+    }
 }

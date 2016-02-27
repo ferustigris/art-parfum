@@ -11,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Random;
 
 /**
  * Store products
@@ -77,6 +76,9 @@ public class ProductsStorage {
 
     public List<Sale> getSales(Long productId, Long storeId) {
         return salesRepository.findByProductIdAndStoreId(productId, storeId);
+    }
 
+    public Long getBalance(Long productId, Long storeId) {
+        return -salesRepository.getSalesSummary(productId, storeId);
     }
 }

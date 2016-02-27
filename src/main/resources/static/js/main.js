@@ -35,8 +35,8 @@ function loadStore(store) {
 
     // create fields in the table
     var fields = [
-        { name: "code", type: "text", width: 100 },
-        { name: "count", type: "number", width: 70 }
+        { name: "code", title: 'Code', type: "text", width: 100 },
+        { name: "input", title: 'Input', type: "number", width: 70 }
     ];
 
     for(i = $('#period').val() - 1; i >= 0 ; --i) {
@@ -55,7 +55,7 @@ function loadStore(store) {
     });
 
     fields.push(
-        { name: "balance", type: "number", width: 70 },
+        { name: "balance", title: 'Balance', type: "number", readOnly: true, width: 70 },
         { type: "control" }
     );
 
@@ -79,10 +79,16 @@ function loadStore(store) {
                     var products = $.parseJSON(result);
                     products.forEach(function(item) {
                         asyncReceive("data/sales.json", function(result) {
-                            var sales = $.parseJSON(result);
+                            var result = $.parseJSON(result);
+                            var sales = result.sales;
+                            item['balance'] = result.balance;
                             sales.forEach(function(sale) {
                                 var i = getDaysBetween(sale.date);
-                                item['d' + i] = sale.count;
+                                if (sale.count >= 0) {
+                                    item['d' + i] = sale.count;
+                                } else {
+                                    item['input'] += -sale.count;
+                                }
                             });
                             console.log("edit item");
                             console.log(item);
