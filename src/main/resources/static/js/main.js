@@ -12,13 +12,18 @@ function asyncReceive (url, receiver, data) {
     });
 }
 
-function getDateInThePast(daysAgo) {
+function getCurrentDate() {
     var currentDate = new Date();
+    return currentDate;
+}
+
+function getDateInThePast(daysAgo) {
+    var currentDate = getCurrentDate();
     return new Date(currentDate.getTime() - daysAgo * 24 * 60 * 60 * 1000);
 }
 
 function getDaysBetween(d) {
-    var currentDate = new Date();
+    var currentDate = getCurrentDate();
     return parseInt((currentDate.getTime() - d) / (24 * 60 * 60 * 1000));
 }
 
@@ -29,8 +34,7 @@ function loadStore(grid, store) {
     var datePeriod = $('#period').val();
     // create fields in the table
     var fields = [
-        { name: "code", title: 'Code', type: "text", width: 100 },
-        { name: "input", title: 'Input', type: "number", width: 70 }
+        { name: "code", title: 'Code', type: "text", width: 100 }
     ];
 
     for(i = datePeriod - 1; i >= 0 ; --i) {
@@ -39,6 +43,7 @@ function loadStore(grid, store) {
     };
 
     fields.push(
+        { name: "input", title: 'Input', type: "number", width: 70 },
         { name: "balance", title: 'Balance', type: "number", readOnly: true, width: 70 },
         { type: "control" }
     );
@@ -67,12 +72,15 @@ function loadStore(grid, store) {
                             var result = $.parseJSON(result);
                             var sales = result.sales;
                             item['balance'] = result.balance;
+                            if (result.input) {
+                                item['input'] = -result.input.count;
+                                item['input_sale'] = -result.input;
+                            }
                             sales.forEach(function(sale) {
                                 var i = getDaysBetween(sale.date);
                                 if (sale.count > 0) {
                                     item['d' + i] = sale.count;
-                                } else {
-                                    item['input'] = -sale.count;
+                                    item['sale_d' + i] = sale;
                                 }
                             });
                             console.log("edit item");
@@ -81,11 +89,12 @@ function loadStore(grid, store) {
                             grid.jsGrid("insertItem", item);
                         }, {
                             'product': item.id,
-                            'date': getDateInThePast(datePeriod).getTime()-1,
+                            'from': getDateInThePast(datePeriod).getTime()-1,
+                            'to': getCurrentDate().getTime()+1,
                             'store': store
-                        })
-                    })
-                }, filter)
+                        });
+                    });
+                }, filter);
             }
         },
 
@@ -103,8 +112,16 @@ function loadStore(grid, store) {
                     }, {
                         'product': args.item.id,
                         'store': store,
-                        'day': i,
+                        'date': getDateInThePast(i).getTime(),
                         'count': args.item['d' + i]
+                    });
+                    asyncReceive("data/updateInput.json", function () {
+                        console.log("sale updated");
+                    }, {
+                        'product': args.item.id,
+                        'store': store,
+                        'date': getCurrentDate().getTime(),
+                        'count': -args.item['input']
                     });
                 }
             }, args.item);

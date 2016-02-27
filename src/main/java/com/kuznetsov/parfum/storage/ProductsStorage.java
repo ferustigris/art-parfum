@@ -34,11 +34,6 @@ public class ProductsStorage {
         return productsRepository.findAll();
     }
 
-    public Sale getSale(Long productId, Date date, Long storeId) {
-        log.debug("getSale with " + date + productId + storeId);
-        return salesRepository.findByProductIdAndStoreIdAndDate(productId, storeId, date);
-    }
-
     public Product createNew(Product product) {
         Product p = productsRepository.findByCode(product.getCode());
         if (p != null) {
@@ -59,7 +54,16 @@ public class ProductsStorage {
     }
 
     public Sale updateSale(Long productId, Long storeId, Date d, Long count) {
-        Sale sale = salesRepository.findByProductIdAndStoreIdAndDate(productId, storeId, d);
+        Sale sale = salesRepository.findByProductIdAndStoreIdAndDateAndCountGreaterThan(productId, storeId, d, Long.valueOf(0));
+        if (sale == null) {
+            return addNewSale(productId, storeId, d, count);
+        }
+        sale.setCount(count);
+        return salesRepository.save(sale);
+    }
+
+    public Sale updateInput(Long productId, Long storeId, Date d, Long count) {
+        Sale sale = salesRepository.findByProductIdAndStoreIdAndDateAndCountLessThan(productId, storeId, d, Long.valueOf(0));
         if (sale == null) {
             return addNewSale(productId, storeId, d, count);
         }
@@ -74,11 +78,19 @@ public class ProductsStorage {
         return salesRepository.save(sale);
     }
 
-    public List<Sale> getSales(Long productId, Long storeId, Date date) {
-        return salesRepository.findByProductIdAndStoreIdAndDateAfter(productId, storeId, date);
+    public List<Sale> getSales(Long productId, Long storeId, Date fromDate, Date toDate) {
+        return salesRepository.findByProductIdAndStoreIdAndDateBetween(productId, storeId, fromDate, toDate);
     }
 
     public Long getBalance(Long productId, Long storeId) {
-        return -salesRepository.getSalesSummary(productId, storeId);
+        Long salesSummary = salesRepository.getSalesSummary(productId, storeId);
+        if (salesSummary != null) {
+            salesSummary = -salesSummary;
+        }
+        return salesSummary;
+    }
+
+    public Sale getInput(Long productId, Long storeId, Date date) {
+        return salesRepository.findByProductIdAndStoreIdAndDateAndCountLessThan(productId, storeId, date, Long.valueOf(0));
     }
 }

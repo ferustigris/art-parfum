@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import org.slf4j.Logger;
@@ -37,20 +38,27 @@ public class ProductsController {
         return storage.getStores();
     }
 
-    @RequestMapping("/data/sale.json")
-    @ResponseBody()
-    public Sale getSale(@RequestParam("product") Long productId, @RequestParam("date") Long date, @RequestParam("store") Long storeId) {
-        log.debug("getSale request");
-        return storage.getSale(productId, new Date(date), storeId);
-    }
-
     @RequestMapping("/data/sales.json")
     @ResponseBody()
-    public Sales getSales(@RequestParam("product") Long productId, @RequestParam("store") Long storeId, @RequestParam("date") Long date) {
+    public Sales getSales(@RequestParam("product") Long productId, @RequestParam("store") Long storeId, @RequestParam("from") Long from, @RequestParam("to") Long to) {
         log.debug("getSales request");
-        List<Sale> sales = storage.getSales(productId, storeId, new Date(date));
+        Date fromDate = new Date(from);
+        Date toDate = new Date(to);
+        Date lastMonday = getLastMonday(toDate);
+        Sale input =   storage.getInput(productId, storeId, lastMonday);
+
+        List<Sale> sales = storage.getSales(productId, storeId, fromDate, toDate);
         Long balance = storage.getBalance(productId, storeId);
-        return new Sales(sales, balance);
+        return new Sales(sales, balance, input);
+    }
+
+    private Date getLastMonday(Date toDate) {
+        // Get calendar set to current date and time
+        Calendar c = Calendar.getInstance();
+        c.setTime(toDate);
+        // Set the calendar to monday of the current week
+        c.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
+        return c.getTime();
     }
 
     @RequestMapping("/data/addNewProduct.json")
@@ -80,28 +88,42 @@ public class ProductsController {
 
     @RequestMapping("/data/updateSale.json")
     @ResponseBody()
-    public Sale updateSale(@RequestParam("product") Long productId, @RequestParam("store") Long storeId, @RequestParam("day") Long day, @RequestParam("count") Long count) {
+    public Sale updateSale(@RequestParam("product") Long productId, @RequestParam("store") Long storeId, @RequestParam("date") Long date, @RequestParam("count") Long count) {
         log.debug("request for sale");
-        Date d = new Date();
-        d.setTime(d.getTime() - day * 24 * 60 * 60 * 1000);
+        Date d = new Date(date);
         return  storage.updateSale(productId, storeId, d, count);
     }
 
+    @RequestMapping("/data/updateInput.json")
+    @ResponseBody()
+    public Sale updateInput(@RequestParam("product") Long productId, @RequestParam("store") Long storeId, @RequestParam("date") Long date, @RequestParam("count") Long count) {
+        log.debug("request for sale");
+        Date toDate = new Date(date);
+        Date lastMonday = getLastMonday(toDate);
+        return  storage.updateInput(productId, storeId, lastMonday, count);
+    }
+
     private class Sales {
+        List<Sale> sales;
+        Long balance;
+        Sale input;
+
+        public Sales(List<Sale> sales, Long balance, Sale input) {
+            this.sales = sales;
+            this.balance = balance;
+            this.input = input;
+        }
+
+        public Sale getInput() {
+            return input;
+        }
+
         public List<Sale> getSales() {
             return sales;
         }
 
         public Long getBalance() {
             return balance;
-        }
-
-        List<Sale> sales;
-        Long balance;
-
-        public Sales(List<Sale> sales, Long balance) {
-            this.sales = sales;
-            this.balance = balance;
         }
     }
 }
