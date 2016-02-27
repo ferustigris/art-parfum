@@ -74,8 +74,8 @@ public class ProductsStorage {
         return salesRepository.save(sale);
     }
 
-    public List<Sale> getSales(Long productId, Long storeId) {
-        return salesRepository.findByProductIdAndStoreId(productId, storeId);
+    public List<Sale> getSales(Long productId, Long storeId, Date date) {
+        return salesRepository.findByProductIdAndStoreIdAndDateAfter(productId, storeId, date);
     }
 
     public Long getBalance(Long productId, Long storeId) {

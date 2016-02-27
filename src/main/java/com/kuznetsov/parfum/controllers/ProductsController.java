@@ -39,16 +39,18 @@ public class ProductsController {
 
     @RequestMapping("/data/sale.json")
     @ResponseBody()
-    public Sale getSales(@RequestParam("product") Long productId, @RequestParam("date") Long date, @RequestParam("store") Long storeId) {
+    public Sale getSale(@RequestParam("product") Long productId, @RequestParam("date") Long date, @RequestParam("store") Long storeId) {
         log.debug("getSale request");
         return storage.getSale(productId, new Date(date), storeId);
     }
 
     @RequestMapping("/data/sales.json")
     @ResponseBody()
-    public Sales getSales(@RequestParam("product") Long productId, @RequestParam("store") Long storeId) {
+    public Sales getSales(@RequestParam("product") Long productId, @RequestParam("store") Long storeId, @RequestParam("date") Long date) {
         log.debug("getSales request");
-        return new Sales(storage.getSales(productId, storeId), storage.getBalance(productId, storeId));
+        List<Sale> sales = storage.getSales(productId, storeId, new Date(date));
+        Long balance = storage.getBalance(productId, storeId);
+        return new Sales(sales, balance);
     }
 
     @RequestMapping("/data/addNewProduct.json")

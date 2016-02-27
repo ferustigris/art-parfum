@@ -14,7 +14,7 @@ public interface SalesRepository extends Repository<Sale, Long> {
     <S extends Sale> S findByProductIdAndStoreIdAndDate(Long productId, Long storeId, Date d);
     <S extends Sale> S save(Sale p);
 
-    List<Sale> findByProductIdAndStoreId(Long productId, Long storeId);
+    List<Sale> findByProductIdAndStoreIdAndDateAfter(Long productId, Long storeId, Date date);
 
     @Query(value = "select SUM(count) FROM sales WHERE product_id=:productId AND store_id=:storeId", nativeQuery = true)
     Long getSalesSummary(@Param("productId") Long productId, @Param("storeId") Long storeId);

@@ -1,10 +1,3 @@
-function addedProductReceive(result) {
-    console.log('Product have been added')
-    var product = $.parseJSON(result);
-    $("#jsGrid").jsGrid("insertItem", product);
-    dialog.dialog( "close" );
-}
-
 function asyncReceive (url, receiver, data) {
     $.ajax({
         url: url,
@@ -29,30 +22,21 @@ function getDaysBetween(d) {
     return parseInt((currentDate.getTime() - d) / (24 * 60 * 60 * 1000));
 }
 
-function loadStore(store) {
+function loadStore(grid, store) {
     console.log("Current store ");
     console.log(store);
 
+    var datePeriod = $('#period').val();
     // create fields in the table
     var fields = [
         { name: "code", title: 'Code', type: "text", width: 100 },
         { name: "input", title: 'Input', type: "number", width: 70 }
     ];
 
-    for(i = $('#period').val() - 1; i >= 0 ; --i) {
+    for(i = datePeriod - 1; i >= 0 ; --i) {
         var d = getDateInThePast(i)
         fields.push({ name: "d" + i, title: d.toDateString(), type: "number", width: 70 });
     };
-
-    $(function() {
-        $( "#tabs" ).tabs({
-            beforeLoad: function( event, ui ) {
-                ui.jqXHR.fail(function() {
-                    ui.panel.html("Couldn't load this tab");
-                });
-            }
-        });
-    });
 
     fields.push(
         { name: "balance", title: 'Balance', type: "number", readOnly: true, width: 70 },
@@ -60,15 +44,16 @@ function loadStore(store) {
     );
 
     // create table
-    $("#jsGrid").jsGrid({
+    grid.jsGrid({
         width: "100%",
         height: window.innerHeight - 200,
 
-        filtering: true,
+//        filtering: true,
         editing: true,
         sorting: true,
         paging: true,
         autoload: true,
+//        inserting: true,
 
         data: [],
         controller: {
@@ -84,19 +69,19 @@ function loadStore(store) {
                             item['balance'] = result.balance;
                             sales.forEach(function(sale) {
                                 var i = getDaysBetween(sale.date);
-                                if (sale.count >= 0) {
+                                if (sale.count > 0) {
                                     item['d' + i] = sale.count;
                                 } else {
-                                    item['input'] += -sale.count;
+                                    item['input'] = -sale.count;
                                 }
                             });
                             console.log("edit item");
                             console.log(item);
                             item.store = store;
-                            $("#jsGrid").jsGrid("insertItem", item);
+                            grid.jsGrid("insertItem", item);
                         }, {
                             'product': item.id,
-                            'date': getDateInThePast(i).getTime(),
+                            'date': getDateInThePast(datePeriod).getTime()-1,
                             'store': store
                         })
                     })
@@ -112,7 +97,7 @@ function loadStore(store) {
         onItemUpdated: function(args) {
             console.log("onItemUpdated");
             asyncReceive("data/updateProduct.json", function () {
-                for(i = 0; i < $('#period').val(); ++i) {
+                for(i = 0; i < datePeriod; ++i) {
                     asyncReceive("data/updateSale.json", function () {
                         console.log("sale updated");
                     }, {
@@ -139,10 +124,16 @@ function loadStore(store) {
                 store: store
             };
 
-            console.log("Try to create new product...")
-            console.log(item)
+            console.log("Try to create new product...");
+            console.log(item);
 
-            asyncReceive("data/addNewProduct.json", addedProductReceive, item)
+            asyncReceive("data/addNewProduct.json", function (result) {
+                                                        console.log('Product have been added')
+                                                        var product = $.parseJSON(result);
+                                                        grid.jsGrid("insertItem", product);
+                                                        dialog.dialog( "close" );
+                                                    }
+                                                    , item);
           },
           Cancel: function() {
             dialog.dialog( "close" );
@@ -179,12 +170,21 @@ function loadStore(store) {
 
 $(document).ready(function () {
 
+    $(function() {
+        $( "#tabs" ).tabs({
+            beforeLoad: function( event, ui ) {
+                ui.jqXHR.fail(function() {
+                    ui.panel.html("Couldn't load this tab");
+                });
+            }
+        });
+    });
+
     asyncReceive("data/stores.json", function (result) {
         console.log('Stores have been received')
         var stores = $.parseJSON(result);
 
         $('#period').selectmenu();
-        $('#storesEl');
         var storesEl = $("#storesEl");
         storesEl.empty();
         stores.forEach(function(store) {
@@ -193,10 +193,10 @@ $(document).ready(function () {
         storesEl.selectmenu({
             change: function( event, data ) {
                 console.log("loadStore");
-                loadStore(data.item.value);
+                loadStore($("#jsSalesGrid"), data.item.value);
             }
         });
 
-        loadStore(stores[0].id);
+        loadStore($("#jsSalesGrid"), stores[0].id);
     });
 });
