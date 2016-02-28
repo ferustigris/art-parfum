@@ -91,7 +91,7 @@ public class ProductsController {
     public Sale updateSale(@RequestParam("product") Long productId, @RequestParam("store") Long storeId, @RequestParam("date") Long date, @RequestParam("count") Long count) {
         log.debug("request for sale");
         Date d = new Date(date);
-        return  storage.updateSale(productId, storeId, d, count);
+        return storage.updateSale(productId, storeId, d, count);
     }
 
     @RequestMapping("/data/updateInput.json")

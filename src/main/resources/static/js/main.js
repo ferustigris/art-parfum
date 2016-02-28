@@ -53,7 +53,7 @@ function loadStore(grid, store) {
         width: "100%",
         height: window.innerHeight - 200,
 
-//        filtering: true,
+        filtering: true,
         editing: true,
         sorting: true,
         paging: true,
@@ -125,6 +125,27 @@ function loadStore(grid, store) {
                     });
                 }
             }, args.item);
+        },
+        onItemUpdating: function(args) {
+            if (isNaN(args.item['balance'])) {
+                args.item['balance'] = 0;
+            }
+            if (isNaN(args.item['input'])) {
+                args.item['input'] = 0;
+            }
+            if (isNaN(args.previousItem['input'])) {
+                args.previousItem['input'] = 0;
+            }
+            for(i = 0; i < datePeriod; ++i) {
+                if (isNaN(parseInt(args.previousItem['d' + i]))) {
+                    args.previousItem['d' + i] = 0;
+                }
+                if (isNaN(parseInt(args.item['d' + i]))) {
+                    args.item['d' + i] = 0;
+                }
+                args.item['balance'] += args.previousItem['d' + i] - args.item['d' + i];
+            }
+            args.item['balance'] -= args.previousItem['input'] - args.item['input'];
         }
     });
 
@@ -186,17 +207,6 @@ function loadStore(grid, store) {
 }
 
 $(document).ready(function () {
-
-    $(function() {
-        $( "#tabs" ).tabs({
-            beforeLoad: function( event, ui ) {
-                ui.jqXHR.fail(function() {
-                    ui.panel.html("Couldn't load this tab");
-                });
-            }
-        });
-    });
-
     asyncReceive("data/stores.json", function (result) {
         console.log('Stores have been received')
         var stores = $.parseJSON(result);

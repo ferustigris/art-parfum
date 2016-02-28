@@ -17,28 +17,18 @@
         <script type="text/ecmascript" src="js/main.js"></script>
     </head>
     <body>
-
-        <div id="tabs">
-            <ul>
-                <li><a href="#sales">Sales</a></li>
-                <li><a href="ajax/content1.html">To order</a></li>
-                <li><a href="ajax/content2.html">Report</a></li>
-            </ul>
-            <div id="sales">
-                <form action="#">
-                    <fieldset id="toolbar" class="ui-widget-header ui-corner-all">
-                        <button id="add-new-product">Create new product</button>
-                        <select name="period" id="period">
-                            <option selected="selected" value="7">Week</option>
-                            <option value="30">Month</option>
-                        </select>
-                        <select name="storesEl" id="storesEl"></select>
-                    </fieldset>
-                </form>
-                <div>
-                    <table id="jsSalesGrid"></table>
-                </div>
-            </div>
+        <form action="#">
+            <fieldset id="toolbar" class="ui-widget-header ui-corner-all">
+                <button id="add-new-product">Create new product</button>
+                <select name="period" id="period">
+                    <option selected="selected" value="7">Week</option>
+                    <option value="30">Month</option>
+                </select>
+                <select name="storesEl" id="storesEl"></select>
+            </fieldset>
+        </form>
+        <div>
+            <table id="jsSalesGrid"></table>
         </div>
         <div id="detailsDialog">
             <p class="validateTips">All form fields are required.</p>
