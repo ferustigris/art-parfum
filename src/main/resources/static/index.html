@@ -14,15 +14,16 @@
         <script type="text/ecmascript" src="js/jsgrid.min.js"></script>
         <script type="text/ecmascript" src="js/jquery-ui.min.js"></script>
         <script type="text/ecmascript" src="js/jquery.validate.min.js"></script>
+        <script type="text/javascript" src="js/jquery.localize.min.js" charset="utf-8"></script>
         <script type="text/ecmascript" src="js/main.js"></script>
     </head>
     <body>
         <form action="#">
             <fieldset id="toolbar" class="ui-widget-header ui-corner-all">
-                <button id="add-new-product">Create new product</button>
-                <select name="period" id="period">
-                    <option selected="selected" value="7">Week</option>
-                    <option value="30">Month</option>
+                <button data-localize="text.add-new-product" id="add-new-product">Create new product</button>
+                <select data-localize="text.period" name="period" id="period">
+                    <option data-localize="text.week" selected="selected" value="7">Week</option>
+                    <option data-localize="text.month" value="30">Month</option>
                 </select>
                 <select name="storesEl" id="storesEl"></select>
             </fieldset>

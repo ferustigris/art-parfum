@@ -210,6 +210,7 @@ $(document).ready(function () {
     asyncReceive("data/stores.json", function (result) {
         console.log('Stores have been received')
         var stores = $.parseJSON(result);
+        var grid = $("#jsSalesGrid");
 
         $('#period').selectmenu();
         var storesEl = $("#storesEl");
@@ -220,10 +221,14 @@ $(document).ready(function () {
         storesEl.selectmenu({
             change: function( event, data ) {
                 console.log("loadStore");
-                loadStore($("#jsSalesGrid"), data.item.value);
+                loadStore(grid, data.item.value);
             }
         });
 
-        loadStore($("#jsSalesGrid"), stores[0].id);
+        asyncReceive("data/stores.json", function (result) {
+            loadStore(grid, stores[0].id);
+            var opts = { language: "ru", pathPrefix: "data/lang"}
+            $("[data-localize]").localize("text", opts)
+        };
     });
 });
