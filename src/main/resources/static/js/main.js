@@ -225,10 +225,10 @@ $(document).ready(function () {
             }
         });
 
-        asyncReceive("data/stores.json", function (result) {
+        asyncReceive("data/lang/text-ru.json", function (result) {
             loadStore(grid, stores[0].id);
             var opts = { language: "ru", pathPrefix: "data/lang"}
             $("[data-localize]").localize("text", opts)
-        };
+        });
     });
 });
