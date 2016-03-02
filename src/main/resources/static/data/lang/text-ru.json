@@ -1,6 +1,13 @@
 {
+  "Input": "Приход  ",
+  "Balance": "Остаток",
+  "Code": "Код",
+  "Create": "Добавить",
+  "Cancel": "Отмена",
   "text": {
     "period": "Период",
+    "name": "Название",
+    "code": "Код",
     "week": "Неделя",
     "add-new-product": "Новый",
     "month": "Месяц"

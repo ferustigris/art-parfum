@@ -34,17 +34,17 @@ function loadStore(grid, store) {
     var datePeriod = $('#period').val();
     // create fields in the table
     var fields = [
-        { name: "code", title: 'Code', type: "text", width: 100 }
+        { name: "code", title: _('Code'), type: "text", width: 100 }
     ];
 
     for(i = datePeriod - 1; i >= 0 ; --i) {
         var d = getDateInThePast(i)
-        fields.push({ name: "d" + i, title: d.toDateString(), type: "number", width: 70 });
+        fields.push({ name: "d" + i, title: d.toLocaleDateString('ru-RU'), type: "number", width: 70 });
     };
 
     fields.push(
-        { name: "input", title: 'Input', type: "number", width: 70 },
-        { name: "balance", title: 'Balance', type: "number", readOnly: true, width: 70 },
+        { name: "input", title: _('Input'), type: "number", width: 70 },
+        { name: "balance", title: _('Balance'), type: "number", readOnly: true, width: 70 },
         { type: "control" }
     );
 
@@ -155,27 +155,33 @@ function loadStore(grid, store) {
         height: 350,
         modal: true,
         buttons: {
-          "Create an product": function() {
-            item = {
-                name: $("#new-product-name").val(),
-                code: $("#new-product-code").val(),
-                store: store
-            };
+            "Create": {
+                text: _("Create"),
+                click: function() {
+                    item = {
+                        name: $("#new-product-name").val(),
+                        code: $("#new-product-code").val(),
+                        store: store
+                    };
 
-            console.log("Try to create new product...");
-            console.log(item);
+                    console.log("Try to create new product...");
+                    console.log(item);
 
-            asyncReceive("data/addNewProduct.json", function (result) {
-                                                        console.log('Product have been added')
-                                                        var product = $.parseJSON(result);
-                                                        grid.jsGrid("insertItem", product);
-                                                        dialog.dialog( "close" );
-                                                    }
-                                                    , item);
-          },
-          Cancel: function() {
-            dialog.dialog( "close" );
-          }
+                    asyncReceive("data/addNewProduct.json", function (result) {
+                        console.log('Product have been added')
+                        var product = $.parseJSON(result);
+                        grid.jsGrid("insertItem", product);
+                        dialog.dialog( "close" );
+                    }
+                    , item);
+                }
+            },
+            "Cancel": {
+                text: _("Cancel"),
+                click: function() {
+                    dialog.dialog( "close" );
+                }
+            }
         },
         close: function() {
             $("#detailsForm").validate().resetForm();
@@ -226,9 +232,9 @@ $(document).ready(function () {
         });
 
         asyncReceive("data/lang/text-ru.json", function (result) {
+            $("[data-localize]").localize("text", { language: "ru", pathPrefix: "data/lang"});
+            _.setTranslation($.parseJSON(result));
             loadStore(grid, stores[0].id);
-            var opts = { language: "ru", pathPrefix: "data/lang"}
-            $("[data-localize]").localize("text", opts)
         });
     });
 });

@@ -15,13 +15,14 @@
         <script type="text/ecmascript" src="js/jquery-ui.min.js"></script>
         <script type="text/ecmascript" src="js/jquery.validate.min.js"></script>
         <script type="text/javascript" src="js/jquery.localize.min.js" charset="utf-8"></script>
+        <script type="text/ecmascript" src="js/translate.js"></script>
         <script type="text/ecmascript" src="js/main.js"></script>
     </head>
     <body>
         <form action="#">
             <fieldset id="toolbar" class="ui-widget-header ui-corner-all">
                 <button data-localize="text.add-new-product" id="add-new-product">Create new product</button>
-                <select data-localize="text.period" name="period" id="period">
+                <select name="period" id="period">
                     <option data-localize="text.week" selected="selected" value="7">Week</option>
                     <option data-localize="text.month" value="30">Month</option>
                 </select>
@@ -35,10 +36,10 @@
             <p class="validateTips">All form fields are required.</p>
             <form id="detailsForm">
                 <fieldset>
-                    <label for="new-product-name">Name</label>
+                    <label data-localize="text.name" for="new-product-name">Name</label>
                     <input id="new-product-name" type="text" name="name" value="Chanel" class="text ui-widget-content ui-corner-all">
 
-                    <label for="new-product-code">Code</label>
+                    <label data-localize="text.code" for="new-product-code">Code</label>
                     <input id="new-product-code" type="text" name="code" value="5" class="text ui-widget-content ui-corner-all">
                 </fieldset>
             </form>
