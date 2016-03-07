@@ -179,24 +179,6 @@ function loadStore(grid, store, datePeriod) {
         dialog.dialog( "open" );
         //grid.jsGrid("option", "inserting", true);
     });
-
-    $("#detailsForm").validate({
-        rules: {
-            name: "required",
-            code: { required: true, minlength: 2 },
-            count: { required: true, range: [0, 1500] },
-            store: "required"
-        },
-        messages: {
-            name: "Please enter name",
-            code: "Please enter valid code",
-            count: "Please enter count",
-            store: "Please select store"
-        },
-        submitHandler: function() {
-            console.log("Try to submit")
-        }
-    });
 }
 
 $(document).ready(function () {
