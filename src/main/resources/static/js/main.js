@@ -59,7 +59,8 @@ function loadStore(grid, store, datePeriod, type) {
 
     // create fields in the table
     var fields = [
-        { name: "code", title: _('Code'), type: "text", width: 100 }
+        { name: "code", title: _('Code'), type: "text", width: 100 },
+        { name: "name", title: _('name'), type: "text", width: 100 },
     ];
 
     for(i = datePeriod - 1; i >= 0 ; --i) {
