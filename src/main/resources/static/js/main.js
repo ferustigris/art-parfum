@@ -27,8 +27,34 @@ function getDaysBetween(d) {
     return parseInt((currentDate.getTime() - d) / (24 * 60 * 60 * 1000));
 }
 
-function loadStore(grid, store, datePeriod) {
-    console.log("Current store ");
+function loadProducts(grid, store, filter) {
+    console.log("filter.type=" + filter.type);
+    return asyncReceive("data/sales.json", function (result) {
+        console.log('Products have been received');
+        var products = $.parseJSON(result);
+        products.forEach(function(item) {
+            item.sales.forEach(function(sale) {
+                var i = getDaysBetween(sale.date);
+                if (sale.count > 0 && filter.type == "sales") {
+                    item['d' + i] = sale.count;
+                }
+                if (sale.count < 0 && filter.type == "inputs") {
+                    item['d' + i] = -sale.count;
+                }
+            });
+            console.log(item);
+            item.store = store;
+            grid.jsGrid("insertItem", item);
+        });
+    }, {
+        'from': getDateInThePast($('#period').val()).getTime()-1,
+        'to': getCurrentDate().getTime()+1,
+        'store': store
+    });
+}
+
+function loadStore(grid, store, datePeriod, type) {
+    console.log("Current store " + type);
     console.log(store);
 
     // create fields in the table
@@ -42,7 +68,6 @@ function loadStore(grid, store, datePeriod) {
     };
 
     fields.push(
-        { name: "input", title: _('Input'), type: "number", width: 70 },
         { name: "balance", title: _('Balance'), type: "number", readOnly: true, width: 70 },
         { type: "control" }
     );
@@ -50,7 +75,7 @@ function loadStore(grid, store, datePeriod) {
     // create table
     grid.jsGrid({
         width: "100%",
-        height: window.innerHeight - 200,
+        height: window.innerHeight - 80,
 
         filtering: true,
         editing: true,
@@ -61,26 +86,8 @@ function loadStore(grid, store, datePeriod) {
         data: [],
         controller: {
             loadData: function(filter) {
-                filter.store = store;
-                return asyncReceive("data/products.json", function (result) {
-                    console.log('Products have been received');
-                    var products = $.parseJSON(result);
-                    products.forEach(function(item) {
-                            item.sales.forEach(function(sale) {
-                                var i = getDaysBetween(sale.date);
-                                if (sale.count > 0) {
-                                    item['d' + i] = sale.count;
-                                }
-                            });
-                            console.log(item);
-                            item.store = store;
-                            grid.jsGrid("insertItem", item);
-                    });
-                }, {
-                    'from': getDateInThePast(datePeriod).getTime()-1,
-                    'to': getCurrentDate().getTime()+1,
-                    'store': store
-                });
+                filter.type = type;
+                return loadProducts(grid, store, filter);
             }
         },
 
@@ -93,21 +100,17 @@ function loadStore(grid, store, datePeriod) {
             console.log("onItemUpdated");
             asyncReceive("data/updateProduct.json", function () {
                 for(i = 0; i < datePeriod; ++i) {
-                    asyncReceive("data/updateSale.json", function () {
-                        console.log("sale updated");
+                    var count = parseInt(args.item['d' + i]);
+                    if (count == 0) {
+                        continue;
+                    }
+                    asyncReceive(type == "inputs" ? "data/updateInput.json" : "data/updateSale.json", function () {
+                        console.log("sales updated");
                     }, {
                         'product': args.item.id,
                         'store': store,
                         'date': getDateInThePast(i).getTime(),
-                        'count': args.item['d' + i]
-                    });
-                    asyncReceive("data/updateInput.json", function () {
-                        console.log("sale updated");
-                    }, {
-                        'product': args.item.id,
-                        'store': store,
-                        'date': getCurrentDate().getTime(),
-                        'count': -args.item['input']
+                        'count': count
                     });
                 }
             }, args.item);
@@ -116,12 +119,6 @@ function loadStore(grid, store, datePeriod) {
             if (isNaN(args.item['balance'])) {
                 args.item['balance'] = 0;
             }
-            if (isNaN(args.item['input'])) {
-                args.item['input'] = 0;
-            }
-            if (isNaN(args.previousItem['input'])) {
-                args.previousItem['input'] = 0;
-            }
             for(i = 0; i < datePeriod; ++i) {
                 if (isNaN(parseInt(args.previousItem['d' + i]))) {
                     args.previousItem['d' + i] = 0;
@@ -129,9 +126,12 @@ function loadStore(grid, store, datePeriod) {
                 if (isNaN(parseInt(args.item['d' + i]))) {
                     args.item['d' + i] = 0;
                 }
-                args.item['balance'] += args.previousItem['d' + i] - args.item['d' + i];
+                if (type == "inputs") {
+                    args.item['balance'] -= args.previousItem['d' + i] - args.item['d' + i];
+            } else {
+                    args.item['balance'] += args.previousItem['d' + i] - args.item['d' + i];
+                }
             }
-            args.item['balance'] -= args.previousItem['input'] - args.item['input'];
         }
     });
 
@@ -158,8 +158,7 @@ function loadStore(grid, store, datePeriod) {
                         var product = $.parseJSON(result);
                         grid.jsGrid("insertItem", product);
                         dialog.dialog( "close" );
-                    }
-                    , item);
+                    }, item);
                 }
             },
             "Cancel": {
@@ -182,35 +181,42 @@ function loadStore(grid, store, datePeriod) {
 }
 
 $(document).ready(function () {
+    var datePeriodEl = $('#period');
+    var salesTypeEl = $('#salesType');
+    var grid = $("#jsSalesGrid");
+    var storesEl = $("#storesEl");
+
+    var onParamChanged = function ( event, data ) {
+        console.log("load...");
+        loadStore(grid, storesEl.val(), datePeriodEl.val(), salesTypeEl.val());
+    }
+
     asyncReceive("data/stores.json", function (result) {
         console.log('Stores have been received')
         var stores = $.parseJSON(result);
-        var grid = $("#jsSalesGrid");
 
-        var storesEl = $("#storesEl");
-        var datePeriodEl = $('#period');
         storesEl.empty();
         stores.forEach(function(store) {
             storesEl.append('<option value="' + store.id + '">' + store.name + '</option>');
         });
-        storesEl.selectmenu({
-            change: function( event, data ) {
-                console.log("load store");
-                loadStore(grid, data.item.value, datePeriodEl.val());
-            }
-        });
-
-        datePeriodEl.selectmenu({
-            change: function( event, data ) {
-                console.log("load period");
-                loadStore(grid, storesEl.val(), data.item.value);
-            }
-        });
+        storesEl.selectmenu({change: onParamChanged});
 
         asyncReceive("data/lang/text-ru.json", function (result) {
             $("[data-localize]").localize("text", { language: "ru", pathPrefix: "data/lang"});
             _.setTranslation($.parseJSON(result));
-            loadStore(grid, stores[0].id, datePeriodEl.val());
+
+            datePeriodEl.empty();
+            datePeriodEl.append('<option value="' + 7 + '">' + _("week") + '</option>');
+            datePeriodEl.append('<option value="' + 14 + '">' + _("2weeks") + '</option>');
+
+            salesTypeEl.empty();
+            salesTypeEl.append('<option value="' + 'sales' + '">' + _("sales") + '</option>');
+            salesTypeEl.append('<option value="' + 'inputs' + '">' + _("inputs") + '</option>');
+
+            datePeriodEl.selectmenu({change: onParamChanged});
+            salesTypeEl.selectmenu({change: onParamChanged});
+
+            loadStore(grid, storesEl.val(), datePeriodEl.val(), salesTypeEl.val());
         });
     });
 });

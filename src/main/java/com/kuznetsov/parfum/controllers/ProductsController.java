@@ -25,10 +25,14 @@ public class ProductsController {
     @Autowired
     private ProductsStorage storage;
 
-    @RequestMapping("/data/products.json")
+    @RequestMapping("/data/sales.json")
     @ResponseBody()
-    public List<ProductData> getProducts(@RequestParam("store") Long store, @RequestParam("from") Long from, @RequestParam("to") Long to) {
-        log.debug("get products request for " + store);
+    public List<ProductData> getSales(@RequestParam("store") Long store, @RequestParam("from") Long from, @RequestParam("to") Long to) {
+        log.debug("get sales request for " + store);
+        return getSalesForProduct(store, from, to);
+    }
+
+    private List<ProductData> getSalesForProduct(Long store, Long from, Long to) {
         List<ProductData> result = new LinkedList<>();
         for (Product product: storage.getProducts(store)) {
             Date fromDate = new Date(from);
@@ -47,8 +51,16 @@ public class ProductsController {
 
             ProductData productData = new ProductData(product, sales, balance, input);
             result.add(productData);
-        };
+        }
         return result;
+    }
+
+
+    @RequestMapping("/data/inputs.json")
+    @ResponseBody()
+    public List<ProductData> getInputs(@RequestParam("store") Long store, @RequestParam("from") Long from, @RequestParam("to") Long to) {
+        log.debug("get inputs request for " + store);
+        return getSalesForProduct(store, from, to);
     }
 
     @RequestMapping("/data/stores.json")
@@ -86,7 +98,7 @@ public class ProductsController {
 
     @RequestMapping("/data/updateProduct.json")
     @ResponseBody()
-    public Product updateProduct(@RequestParam("name") String name, @RequestParam("code") String code, @RequestParam("input") Long input) {
+    public Product updateProduct(@RequestParam("name") String name, @RequestParam("code") String code) {
         Product product = new Product(code, name);
         log.debug("request for creating new product " + product);
         return storage.update(product);
@@ -104,9 +116,8 @@ public class ProductsController {
     @ResponseBody()
     public Sale updateInput(@RequestParam("product") Long productId, @RequestParam("store") Long storeId, @RequestParam("date") Long date, @RequestParam("count") Long count) {
         log.debug("request for sale");
-        Date toDate = new Date(date);
-        Date lastMonday = getLastMonday(toDate);
-        return  storage.updateInput(productId, storeId, lastMonday, count);
+        Date d = new Date(date);
+        return  storage.updateInput(productId, storeId, d, -count);
     }
 
 }

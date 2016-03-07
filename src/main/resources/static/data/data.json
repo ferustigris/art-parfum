@@ -1,23 +1,6 @@
 [
   {
-    "code": "dsfdds",
-    "count": "12",
-    "monday": "150",
-    "tuesday": "1520",
-    "balance": "12"
-  },
-  {
-    "code": "hgfhg",
-    "count": "12",
-    "monday": "150",
-    "tuesday": "1520",
-    "balance": "12"
-  },
-  {
-    "code": "trytyrt",
-    "count": "12",
-    "monday": "150",
-    "tuesday": "1520",
-    "balance": "12"
-  }
-]
+    "id":1,"code":"51","name":"1","input":
+  {"count":0,"date":1457367194101,"prise":0.0},
+    "balance":85,"sales":[
+    {"count":-100,"date":1456693200000,"prise":null}]},{"id":2,"code":"512","name":"12","input":{"count":0,"date":1457367194123,"prise":0.0},"balance":83,"sales":[{"count":-100,"date":1456693200000,"prise":null}]},{"id":3,"code":"5","name":"Chanel","input":{"count":0,"date":1457367194143,"prise":0.0},"balance":-61,"sales":[]},{"id":4,"code":"52","name":"Chanel1","input":{"count":0,"date":1457367194160,"prise":0.0},"balance":-6,"sales":[]}]
