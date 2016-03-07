@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,9 +27,28 @@ public class ProductsController {
 
     @RequestMapping("/data/products.json")
     @ResponseBody()
-    public List<Product> getProducts(@RequestParam("store") Long store) {
+    public List<ProductData> getProducts(@RequestParam("store") Long store, @RequestParam("from") Long from, @RequestParam("to") Long to) {
         log.debug("get products request for " + store);
-        return storage.getProducts(store);
+        List<ProductData> result = new LinkedList<>();
+        for (Product product: storage.getProducts(store)) {
+            Date fromDate = new Date(from);
+            Date toDate = new Date(to);
+            Date lastMonday = getLastMonday(toDate);
+
+            Sale inputForProduct = storage.getInput(product.getId(), store, lastMonday);
+            SaleData input = new SaleData(inputForProduct);
+            List<Sale> salesForProduct = storage.getSales(product.getId(), store, fromDate, toDate);
+            List<SaleData> sales = new LinkedList<>();
+            for (Sale sale : salesForProduct) {
+                SaleData saleData = new SaleData(sale);
+                sales.add(saleData);
+            }
+            Long balance = storage.getBalance(product.getId(), store);
+
+            ProductData productData = new ProductData(product, sales, balance, input);
+            result.add(productData);
+        };
+        return result;
     }
 
     @RequestMapping("/data/stores.json")
@@ -36,20 +56,6 @@ public class ProductsController {
     public List<Store> getStores() {
         log.debug("get stores request");
         return storage.getStores();
-    }
-
-    @RequestMapping("/data/sales.json")
-    @ResponseBody()
-    public Sales getSales(@RequestParam("product") Long productId, @RequestParam("store") Long storeId, @RequestParam("from") Long from, @RequestParam("to") Long to) {
-        log.debug("getSales request");
-        Date fromDate = new Date(from);
-        Date toDate = new Date(to);
-        Date lastMonday = getLastMonday(toDate);
-        Sale input =   storage.getInput(productId, storeId, lastMonday);
-
-        List<Sale> sales = storage.getSales(productId, storeId, fromDate, toDate);
-        Long balance = storage.getBalance(productId, storeId);
-        return new Sales(sales, balance, input);
     }
 
     private Date getLastMonday(Date toDate) {
@@ -103,27 +109,4 @@ public class ProductsController {
         return  storage.updateInput(productId, storeId, lastMonday, count);
     }
 
-    private class Sales {
-        List<Sale> sales;
-        Long balance;
-        Sale input;
-
-        public Sales(List<Sale> sales, Long balance, Sale input) {
-            this.sales = sales;
-            this.balance = balance;
-            this.input = input;
-        }
-
-        public Sale getInput() {
-            return input;
-        }
-
-        public List<Sale> getSales() {
-            return sales;
-        }
-
-        public Long getBalance() {
-            return balance;
-        }
-    }
 }

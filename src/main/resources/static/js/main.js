@@ -27,11 +27,10 @@ function getDaysBetween(d) {
     return parseInt((currentDate.getTime() - d) / (24 * 60 * 60 * 1000));
 }
 
-function loadStore(grid, store) {
+function loadStore(grid, store, datePeriod) {
     console.log("Current store ");
     console.log(store);
 
-    var datePeriod = $('#period').val();
     // create fields in the table
     var fields = [
         { name: "code", title: _('Code'), type: "text", width: 100 }
@@ -58,7 +57,6 @@ function loadStore(grid, store) {
         sorting: true,
         paging: true,
         autoload: true,
-//        inserting: true,
 
         data: [],
         controller: {
@@ -68,33 +66,21 @@ function loadStore(grid, store) {
                     console.log('Products have been received');
                     var products = $.parseJSON(result);
                     products.forEach(function(item) {
-                        asyncReceive("data/sales.json", function(result) {
-                            var result = $.parseJSON(result);
-                            var sales = result.sales;
-                            item['balance'] = result.balance;
-                            if (result.input) {
-                                item['input'] = -result.input.count;
-                                item['input_sale'] = -result.input;
-                            }
-                            sales.forEach(function(sale) {
+                            item.sales.forEach(function(sale) {
                                 var i = getDaysBetween(sale.date);
                                 if (sale.count > 0) {
                                     item['d' + i] = sale.count;
-                                    item['sale_d' + i] = sale;
                                 }
                             });
-                            console.log("edit item");
                             console.log(item);
                             item.store = store;
                             grid.jsGrid("insertItem", item);
-                        }, {
-                            'product': item.id,
-                            'from': getDateInThePast(datePeriod).getTime()-1,
-                            'to': getCurrentDate().getTime()+1,
-                            'store': store
-                        });
                     });
-                }, filter);
+                }, {
+                    'from': getDateInThePast(datePeriod).getTime()-1,
+                    'to': getCurrentDate().getTime()+1,
+                    'store': store
+                });
             }
         },
 
@@ -191,6 +177,7 @@ function loadStore(grid, store) {
 
     $( "#add-new-product" ).button().on( "click", function() {
         dialog.dialog( "open" );
+        //grid.jsGrid("option", "inserting", true);
     });
 
     $("#detailsForm").validate({
@@ -218,23 +205,30 @@ $(document).ready(function () {
         var stores = $.parseJSON(result);
         var grid = $("#jsSalesGrid");
 
-        $('#period').selectmenu();
         var storesEl = $("#storesEl");
+        var datePeriodEl = $('#period');
         storesEl.empty();
         stores.forEach(function(store) {
             storesEl.append('<option value="' + store.id + '">' + store.name + '</option>');
         });
         storesEl.selectmenu({
             change: function( event, data ) {
-                console.log("loadStore");
-                loadStore(grid, data.item.value);
+                console.log("load store");
+                loadStore(grid, data.item.value, datePeriodEl.val());
+            }
+        });
+
+        datePeriodEl.selectmenu({
+            change: function( event, data ) {
+                console.log("load period");
+                loadStore(grid, storesEl.val(), data.item.value);
             }
         });
 
         asyncReceive("data/lang/text-ru.json", function (result) {
             $("[data-localize]").localize("text", { language: "ru", pathPrefix: "data/lang"});
             _.setTranslation($.parseJSON(result));
-            loadStore(grid, stores[0].id);
+            loadStore(grid, stores[0].id, datePeriodEl.val());
         });
     });
 });
