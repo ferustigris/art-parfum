@@ -15,6 +15,7 @@
         <script type="text/ecmascript" src="js/jquery-ui.min.js"></script>
         <script type="text/ecmascript" src="js/jquery.validate.min.js"></script>
         <script type="text/ecmascript" src="js/jquery.localize.min.js"></script>
+        <script type="text/ecmascript" src="js/jquery.cookies.js"></script>
         <script type="text/ecmascript" src="js/translate.js"></script>
         <script type="text/ecmascript" src="js/main.js"></script>
     </head>
@@ -25,10 +26,12 @@
                 <select name="period" id="period"></select>
                 <select name="storesEl" id="storesEl"></select>
                 <select name="salesType" id="salesType"></select>
+                <button data-localize="text.options" id="options">options</button>
             </fieldset>
         </form>
         <div>
             <table id="jsSalesGrid"></table>
+            <table id="jsSummariesGrid"></table>
         </div>
         <div id="detailsDialog">
             <p class="validateTips">All form fields are required.</p>
@@ -39,6 +42,18 @@
 
                     <label data-localize="text.code" for="new-product-code">Code</label>
                     <input id="new-product-code" type="text" name="code" value="5" class="text ui-widget-content ui-corner-all">
+                </fieldset>
+            </form>
+        </div>
+        <div id="optionsDialog">
+            <p class="validateTips">All form fields are required.</p>
+            <form id="optionsForm">
+                <fieldset>
+                    <label data-localize="text.start_prise" for="new-product-start-prise">start-prise</label>
+                    <input id="new-product-start-prise" type="text" name="new-product-start-prise" value="0" class="text ui-widget-content ui-corner-all">
+
+                    <label data-localize="text.prise" for="new-product-prise">prise</label>
+                    <input id="new-product-prise" type="text" name="prise" value="12" class="text ui-widget-content ui-corner-all">
                 </fieldset>
             </form>
         </div>

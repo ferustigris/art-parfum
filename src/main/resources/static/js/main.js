@@ -27,25 +27,44 @@ function getDaysBetween(d) {
     return parseInt((currentDate.getTime() - d) / (24 * 60 * 60 * 1000));
 }
 
-function loadProducts(grid, store, filter) {
+function loadProducts(grid, store, filter, summaryGrid) {
     console.log("filter.type=" + filter.type);
     return asyncReceive("data/sales.json", function (result) {
         console.log('Products have been received');
         var products = $.parseJSON(result);
+        var summaryCounts = {
+            'code': _('count')
+        };
+        var summaryPrise = {
+            'code': _('prise')
+        };
         products.forEach(function(item) {
             item.sales.forEach(function(sale) {
                 var i = getDaysBetween(sale.date);
+                var index = 'd' + i;
+                if (isNaN(parseInt(summaryCounts[index]))) {
+                    summaryCounts[index] = 0;
+                }
+                if (isNaN(parseInt(summaryPrise[index]))) {
+                    summaryPrise[index] = 0;
+                }
                 if (sale.count > 0 && filter.type == "sales") {
-                    item['d' + i] = sale.count;
+                    item[index] = sale.count;
+                    summaryCounts[index] += sale.count;
+                    summaryPrise[index] += sale.count * $('#new-product-prise').val();
                 }
                 if (sale.count < 0 && filter.type == "inputs") {
-                    item['d' + i] = -sale.count;
+                    item[index] = -sale.count;
+                    summaryCounts[index] -= sale.count;
+                    summaryPrise[index] -= sale.count * $('#new-product-start-prise').val();
                 }
             });
             console.log(item);
             item.store = store;
             grid.jsGrid("insertItem", item);
         });
+        summaryGrid.jsGrid("insertItem", summaryCounts);
+        summaryGrid.jsGrid("insertItem", summaryPrise);
     }, {
         'from': getDateInThePast($('#period').val()).getTime()-1,
         'to': getCurrentDate().getTime()+1,
@@ -105,6 +124,8 @@ function loadStore(grid, store, datePeriod, type) {
     console.log("Current store " + type);
     console.log(store);
 
+    var summary = $("#jsSummariesGrid");
+
     // create fields in the table
     var fields = [
         { name: "code", title: _('Code'), type: "text", width: 100 },
@@ -117,14 +138,30 @@ function loadStore(grid, store, datePeriod, type) {
     };
 
     fields.push(
-        { name: "balance", title: _('Balance'), type: "number", readOnly: true, width: 70 },
+        { name: "balance", title: _('Balance'), type: "number", readOnly: true },
         { type: "control" }
     );
 
     // create table
+    summary.jsGrid({
+        width: "100%",
+
+        filtering: false,
+        editing: false,
+        removing: false,
+        sorting: false,
+        paging: false,
+        heading: false,
+        selecting: false,
+        autoload: true,
+        data: [],
+
+        fields: fields
+    });
+
+    // create table
     grid.jsGrid({
         width: "100%",
-        height: window.innerHeight - 80,
 
         filtering: true,
         editing: true,
@@ -136,7 +173,7 @@ function loadStore(grid, store, datePeriod, type) {
         controller: {
             loadData: function(filter) {
                 filter.type = type;
-                return loadProducts(grid, store, filter);
+                return loadProducts(grid, store, filter, summary);
             }
         },
 
@@ -169,6 +206,7 @@ function loadStore(grid, store, datePeriod, type) {
                     item = {
                         name: $("#new-product-name").val(),
                         code: $("#new-product-code").val(),
+                        prise: $("#new-product-prise").val(),
                         store: store
                     };
                     createNewItem(grid, item);
@@ -189,7 +227,6 @@ function loadStore(grid, store, datePeriod, type) {
 
     $( "#add-new-product" ).button().on( "click", function() {
         dialog.dialog( "open" );
-        //grid.jsGrid("option", "inserting", true);
     });
 }
 
@@ -198,6 +235,33 @@ $(document).ready(function () {
     var salesTypeEl = $('#salesType');
     var grid = $("#jsSalesGrid");
     var storesEl = $("#storesEl");
+
+    var optionsDialog = $("#optionsDialog").dialog({
+        autoOpen: false,
+        width: 400,
+        height: 350,
+        modal: true,
+        buttons: {
+            "Save": {
+                text: 'ok',
+                click: function() {
+                    optionsDialog.dialog( "close" );
+                }
+            },
+            "Cancel": {
+                text: _("Cancel"),
+                click: function() {
+                    $('#new-product-start-prise').val(0);
+                    $('#new-product-prise').val(12);
+                    optionsDialog.dialog( "close" );
+                }
+            }
+        }
+    });
+
+    $('#options').button().on( "click", function() {
+        optionsDialog.dialog("open");
+    });
 
     var onParamChanged = function ( event, data ) {
         console.log("load...");
