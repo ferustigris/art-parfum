@@ -53,6 +53,54 @@ function loadProducts(grid, store, filter) {
     });
 }
 
+function createNewItem(grid, item) {
+    console.log("Create new product...");
+    console.log(item);
+
+    asyncReceive("data/addNewProduct.json", function (result) {
+        console.log('Product have been added')
+        var product = $.parseJSON(result);
+        grid.jsGrid("insertItem", product);
+        dialog.dialog( "close" );
+    }, item);
+}
+
+function updateProduct(item, datePeriod, store, requestPath) {
+    for(i = 0; i < datePeriod; ++i) {
+        var count = parseInt(item['d' + i]);
+        if (count == 0) {
+            continue;
+        }
+        asyncReceive(requestPath, function () {
+            console.log("sales updated");
+        }, {
+            'product': item.id,
+            'store': store,
+            'date': getDateInThePast(i).getTime(),
+            'count': count
+        });
+    }
+}
+
+function onUpdateProduct(item, previousItem, datePeriod, type) {
+    if (isNaN(item['balance'])) {
+        item['balance'] = 0;
+    }
+    for(i = 0; i < datePeriod; ++i) {
+        if (isNaN(parseInt(previousItem['d' + i]))) {
+            previousItem['d' + i] = 0;
+        }
+        if (isNaN(parseInt(item['d' + i]))) {
+            item['d' + i] = 0;
+        }
+        if (type == "inputs") {
+            item['balance'] -= previousItem['d' + i] - item['d' + i];
+        } else {
+            item['balance'] += previousItem['d' + i] - item['d' + i];
+        }
+    }
+}
+
 function loadStore(grid, store, datePeriod, type) {
     console.log("Current store " + type);
     console.log(store);
@@ -83,8 +131,8 @@ function loadStore(grid, store, datePeriod, type) {
         sorting: true,
         paging: true,
         autoload: true,
-
         data: [],
+
         controller: {
             loadData: function(filter) {
                 filter.type = type;
@@ -100,39 +148,12 @@ function loadStore(grid, store, datePeriod, type) {
         onItemUpdated: function(args) {
             console.log("onItemUpdated");
             asyncReceive("data/updateProduct.json", function () {
-                for(i = 0; i < datePeriod; ++i) {
-                    var count = parseInt(args.item['d' + i]);
-                    if (count == 0) {
-                        continue;
-                    }
-                    asyncReceive(type == "inputs" ? "data/updateInput.json" : "data/updateSale.json", function () {
-                        console.log("sales updated");
-                    }, {
-                        'product': args.item.id,
-                        'store': store,
-                        'date': getDateInThePast(i).getTime(),
-                        'count': count
-                    });
-                }
+                requestPath = type == "inputs" ? "data/updateInput.json" : "data/updateSale.json";
+                updateProduct(args.item, datePeriod, store, requestPath);
             }, args.item);
         },
         onItemUpdating: function(args) {
-            if (isNaN(args.item['balance'])) {
-                args.item['balance'] = 0;
-            }
-            for(i = 0; i < datePeriod; ++i) {
-                if (isNaN(parseInt(args.previousItem['d' + i]))) {
-                    args.previousItem['d' + i] = 0;
-                }
-                if (isNaN(parseInt(args.item['d' + i]))) {
-                    args.item['d' + i] = 0;
-                }
-                if (type == "inputs") {
-                    args.item['balance'] -= args.previousItem['d' + i] - args.item['d' + i];
-            } else {
-                    args.item['balance'] += args.previousItem['d' + i] - args.item['d' + i];
-                }
-            }
+            onUpdateProduct(args.item, args.previousItem, type, onUpdateProduct);
         }
     });
 
@@ -150,16 +171,7 @@ function loadStore(grid, store, datePeriod, type) {
                         code: $("#new-product-code").val(),
                         store: store
                     };
-
-                    console.log("Try to create new product...");
-                    console.log(item);
-
-                    asyncReceive("data/addNewProduct.json", function (result) {
-                        console.log('Product have been added')
-                        var product = $.parseJSON(result);
-                        grid.jsGrid("insertItem", product);
-                        dialog.dialog( "close" );
-                    }, item);
+                    createNewItem(grid, item);
                 }
             },
             "Cancel": {
