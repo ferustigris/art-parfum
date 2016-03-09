@@ -32,39 +32,32 @@ function loadProducts(grid, store, filter, summaryGrid) {
     return asyncReceive("data/sales.json", function (result) {
         console.log('Products have been received');
         var products = $.parseJSON(result);
-        var summaryCounts = {
-            'code': _('count')
-        };
-        var summaryPrise = {
-            'code': _('prise')
-        };
         products.forEach(function(item) {
             item.sales.forEach(function(sale) {
                 var i = getDaysBetween(sale.date);
                 var index = 'd' + i;
-                if (isNaN(parseInt(summaryCounts[index]))) {
-                    summaryCounts[index] = 0;
+                if (isNaN(parseInt(summaryGrid.counts[index]))) {
+                    summaryGrid.counts[index] = 0;
                 }
-                if (isNaN(parseInt(summaryPrise[index]))) {
-                    summaryPrise[index] = 0;
+                if (isNaN(parseInt(summaryGrid.prises[index]))) {
+                    summaryGrid.prises[index] = 0;
                 }
                 if (sale.count > 0 && filter.type == "sales") {
                     item[index] = sale.count;
-                    summaryCounts[index] += sale.count;
-                    summaryPrise[index] += sale.count * $('#new-product-prise').val();
+                    summaryGrid.counts[index] += sale.count;
+                    summaryGrid.prises[index] += sale.count * $('#new-product-prise').val();
                 }
                 if (sale.count < 0 && filter.type == "inputs") {
                     item[index] = -sale.count;
-                    summaryCounts[index] -= sale.count;
-                    summaryPrise[index] -= sale.count * $('#new-product-start-prise').val();
+                    summaryGrid.counts[index] -= sale.count;
+                    summaryGrid.prises[index] -= sale.count * $('#new-product-start-prise').val();
                 }
             });
             console.log(item);
             item.store = store;
             grid.jsGrid("insertItem", item);
+            summaryGrid.jsGrid("refresh");
         });
-        summaryGrid.jsGrid("insertItem", summaryCounts);
-        summaryGrid.jsGrid("insertItem", summaryPrise);
     }, {
         'from': getDateInThePast($('#period').val()).getTime()-1,
         'to': getCurrentDate().getTime()+1,
@@ -101,31 +94,40 @@ function updateProduct(item, datePeriod, store, requestPath) {
     }
 }
 
-function onUpdateProduct(item, previousItem, datePeriod, type) {
+function onUpdateProduct(item, previousItem, datePeriod, type, summaryGrid) {
     if (isNaN(item['balance'])) {
         item['balance'] = 0;
     }
     for(i = 0; i < datePeriod; ++i) {
-        if (isNaN(parseInt(previousItem['d' + i]))) {
-            previousItem['d' + i] = 0;
+
+        var index = 'd' + i;
+        if (isNaN(parseInt(summaryGrid.counts[index]))) {
+            summaryGrid.counts[index] = 0;
         }
-        if (isNaN(parseInt(item['d' + i]))) {
-            item['d' + i] = 0;
+        if (isNaN(parseInt(summaryGrid.prises[index]))) {
+            summaryGrid.prises[index] = 0;
+        }
+
+        if (isNaN(parseInt(previousItem[index]))) {
+            previousItem[index] = 0;
+        }
+        if (isNaN(parseInt(item[index]))) {
+            item[index] = 0;
         }
         if (type == "inputs") {
-            item['balance'] -= previousItem['d' + i] - item['d' + i];
+            item['balance'] -= previousItem[index] - item[index];
+            summaryGrid.prises[index] -= (previousItem[index] - item[index]) * $('#new-product-start-prise').val();
         } else {
-            item['balance'] += previousItem['d' + i] - item['d' + i];
+            summaryGrid.prises[index] -= (previousItem[index] - item[index]) * $('#new-product-prise').val();
+            item['balance'] += previousItem[index] - item[index];
         }
+
+        summaryGrid.counts[index] -= previousItem[index] - item[index];
     }
+    summaryGrid.jsGrid("refresh");
 }
 
-function loadStore(grid, store, datePeriod, type) {
-    console.log("Current store " + type);
-    console.log(store);
-
-    var summary = $("#jsSummariesGrid");
-
+function createFieldsForGrid(datePeriod) {
     // create fields in the table
     var fields = [
         { name: "code", title: _('Code'), type: "text", width: 100 },
@@ -141,8 +143,18 @@ function loadStore(grid, store, datePeriod, type) {
         { name: "balance", title: _('Balance'), type: "number", readOnly: true },
         { type: "control" }
     );
+    return fields;
+}
 
+function createSummaryGrid(summary, fields) {
     // create table
+    var summaryCounts = {
+        'code': _('count')
+    };
+    var summaryPrise = {
+        'code': _('prise')
+    };
+
     summary.jsGrid({
         width: "100%",
 
@@ -154,47 +166,21 @@ function loadStore(grid, store, datePeriod, type) {
         heading: false,
         selecting: false,
         autoload: true,
-        data: [],
+        data: [
+            summaryCounts,
+            summaryPrise
+        ],
 
         fields: fields
     });
+    summary.counts = summaryCounts;
+    summary.prises = summaryPrise;
+    return summary;
+}
 
-    // create table
-    grid.jsGrid({
-        width: "100%",
+function createAddNewProductDialog(grid, store) {
 
-        filtering: true,
-        editing: true,
-        sorting: true,
-        paging: true,
-        autoload: true,
-        data: [],
-
-        controller: {
-            loadData: function(filter) {
-                filter.type = type;
-                return loadProducts(grid, store, filter, summary);
-            }
-        },
-
-        fields: fields,
-        onItemDeleted: function(args) {
-            console.log("onItemDeleted");
-            asyncReceive("data/removeProduct.json", function () {}, args.item);
-        },
-        onItemUpdated: function(args) {
-            console.log("onItemUpdated");
-            asyncReceive("data/updateProduct.json", function () {
-                requestPath = type == "inputs" ? "data/updateInput.json" : "data/updateSale.json";
-                updateProduct(args.item, datePeriod, store, requestPath);
-            }, args.item);
-        },
-        onItemUpdating: function(args) {
-            onUpdateProduct(args.item, args.previousItem, type, onUpdateProduct);
-        }
-    });
-
-    dialog = $("#detailsDialog").dialog({
+    var dialog = $("#detailsDialog").dialog({
         autoOpen: false,
         width: 400,
         height: 350,
@@ -228,6 +214,55 @@ function loadStore(grid, store, datePeriod, type) {
     $( "#add-new-product" ).button().on( "click", function() {
         dialog.dialog( "open" );
     });
+
+    return dialog;
+}
+
+function loadStore(grid, store, datePeriod, type) {
+    console.log("Current store " + type);
+    console.log(store);
+
+    // create fields in the table
+    var fields = createFieldsForGrid(datePeriod);
+
+    var summary = createSummaryGrid($("#jsSummariesGrid"), fields);
+    // create table
+    grid.jsGrid({
+        width: "100%",
+
+        filtering: true,
+        editing: true,
+        sorting: true,
+        paging: true,
+        autoload: true,
+        data: [],
+
+        controller: {
+            loadData: function(filter) {
+                filter.type = type;
+                return loadProducts(grid, store, filter, summary);
+            }
+        },
+
+        fields: fields,
+        onItemDeleted: function(args) {
+            console.log("onItemDeleted");
+            asyncReceive("data/removeProduct.json", function () {}, args.item);
+        },
+        onItemUpdated: function(args) {
+            console.log("onItemUpdated");
+            asyncReceive("data/updateProduct.json", function () {
+                requestPath = type == "inputs" ? "data/updateInput.json" : "data/updateSale.json";
+                updateProduct(args.item, datePeriod, store, requestPath);
+            }, args.item);
+        },
+        onItemUpdating: function(args) {
+            console.log("onItemUpdating");
+            onUpdateProduct(args.item, args.previousItem, datePeriod, type, summary);
+        }
+    });
+
+    createAddNewProductDialog(grid, store);
 }
 
 $(document).ready(function () {
