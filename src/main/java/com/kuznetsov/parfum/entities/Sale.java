@@ -30,7 +30,6 @@ public class Sale {
 
     @Column
     @Temporal(TemporalType.DATE)
-    @JsonSerialize(using = PlaneDateSerializer.class)
     private Date date;
 
     public Sale(Store store, Product product, Date date, Long count) {
