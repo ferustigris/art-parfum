@@ -27,7 +27,8 @@ function getDaysBetween(d) {
     return parseInt((currentDate.getTime() - d) / (24 * 60 * 60 * 1000));
 }
 
-function loadProducts(grid, store, filter, summaryGrid) {
+function loadProducts(store, filter, summaryGrid) {
+    var grid = this;
     console.log("filter.type=" + filter.type);
     return asyncReceive("data/sales.json", function (result) {
         console.log('Products have been received');
@@ -179,8 +180,7 @@ function createSummaryGrid(summary, fields) {
 }
 
 function createAddNewProductDialog(grid, store) {
-
-    var dialog = $("#detailsDialog").dialog({
+    dialog = $("#detailsDialog").dialog({
         autoOpen: false,
         width: 400,
         height: 350,
@@ -227,20 +227,22 @@ function loadStore(grid, store, datePeriod, type) {
 
     var summary = createSummaryGrid($("#jsSummariesGrid"), fields);
     // create table
+
+    grid.loadProducts = loadProducts;
     grid.jsGrid({
         width: "100%",
 
-        filtering: true,
+        filtering: false,
         editing: true,
         sorting: true,
-        paging: true,
+        paging: false,
         autoload: true,
         data: [],
 
         controller: {
             loadData: function(filter) {
                 filter.type = type;
-                return loadProducts(grid, store, filter, summary);
+                return grid.loadProducts(store, filter, summary);
             }
         },
 
