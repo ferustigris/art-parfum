@@ -296,10 +296,6 @@ $(document).ready(function () {
         }
     });
 
-    $('#options').button().on( "click", function() {
-        optionsDialog.dialog("open");
-    });
-
     var onParamChanged = function ( event, data ) {
         console.log("load...");
         loadStore(grid, storesEl.val(), datePeriodEl.val(), salesTypeEl.val());
@@ -329,6 +325,10 @@ $(document).ready(function () {
 
             datePeriodEl.selectmenu({change: onParamChanged});
             salesTypeEl.selectmenu({change: onParamChanged});
+
+            $('#options').button().on( "click", function() {
+                optionsDialog.dialog("open");
+            });
 
             loadStore(grid, storesEl.val(), datePeriodEl.val(), salesTypeEl.val());
         });
