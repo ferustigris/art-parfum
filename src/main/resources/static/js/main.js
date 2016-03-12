@@ -37,12 +37,9 @@ function loadProducts(store, filter, summaryGrid) {
             item.sales.forEach(function(sale) {
                 var i = getDaysBetween(sale.date);
                 var index = 'd' + i;
-                if (isNaN(parseInt(summaryGrid.counts[index]))) {
-                    summaryGrid.counts[index] = 0;
-                }
-                if (isNaN(parseInt(summaryGrid.prises[index]))) {
-                    summaryGrid.prises[index] = 0;
-                }
+                summaryGrid.counts[index] = summaryGrid.counts[index] || 0;
+                summaryGrid.prises[index] = summaryGrid.prises[index] || 0;
+
                 if (sale.count > 0 && filter.type == "sales") {
                     item[index] = sale.count;
                     summaryGrid.counts[index] += sale.count;
@@ -96,25 +93,14 @@ function updateProduct(item, datePeriod, store, requestPath) {
 }
 
 function onUpdateProduct(item, previousItem, datePeriod, type, summaryGrid) {
-    if (isNaN(item['balance'])) {
-        item['balance'] = 0;
-    }
+    item['balance'] = item['balance'] || 0;
     for(i = 0; i < datePeriod; ++i) {
-
         var index = 'd' + i;
-        if (isNaN(parseInt(summaryGrid.counts[index]))) {
-            summaryGrid.counts[index] = 0;
-        }
-        if (isNaN(parseInt(summaryGrid.prises[index]))) {
-            summaryGrid.prises[index] = 0;
-        }
+        summaryGrid.counts[index] = summaryGrid.counts[index] || 0;
+        summaryGrid.prises[index] = summaryGrid.prises[index] || 0;
+        previousItem[index] = previousItem[index] || 0;
+        item[index] = item[index] || 0;
 
-        if (isNaN(parseInt(previousItem[index]))) {
-            previousItem[index] = 0;
-        }
-        if (isNaN(parseInt(item[index]))) {
-            item[index] = 0;
-        }
         if (type == "inputs") {
             item['balance'] -= previousItem[index] - item[index];
             summaryGrid.prises[index] -= (previousItem[index] - item[index]) * $('#new-product-start-prise').val();
@@ -141,13 +127,13 @@ function createFieldsForGrid(datePeriod) {
     };
 
     fields.push(
-        { name: "balance", title: _('Balance'), type: "number", readOnly: true },
-        { type: "control" }
+        { name: "balance", title: _('Balance'), type: "number", readOnly: true }
+
     );
     return fields;
 }
 
-function createSummaryGrid(summary, fields) {
+function createSummaryGrid(summary, datePeriod) {
     // create table
     var summaryCounts = {
         'code': _('count')
@@ -155,6 +141,12 @@ function createSummaryGrid(summary, fields) {
     var summaryPrise = {
         'code': _('prise')
     };
+
+    var fields = createFieldsForGrid(datePeriod);
+
+    fields.push(
+        { name: "none", type: "number", width: '50px', readOnly: true }
+    );
 
     summary.jsGrid({
         width: "100%",
@@ -222,11 +214,12 @@ function loadStore(grid, store, datePeriod, type) {
     console.log("Current store " + type);
     console.log(store);
 
-    // create fields in the table
-    var fields = createFieldsForGrid(datePeriod);
+    var summary = createSummaryGrid($("#jsSummariesGrid"), datePeriod);
 
-    var summary = createSummaryGrid($("#jsSummariesGrid"), fields);
-    // create table
+    var fields = createFieldsForGrid(datePeriod);
+    fields.push(
+        { type: "control" }
+    );
 
     grid.loadProducts = loadProducts;
     grid.jsGrid({
