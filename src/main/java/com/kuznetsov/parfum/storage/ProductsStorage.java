@@ -46,9 +46,6 @@ public class ProductsStorage {
         return product;
     }
 
-    public void remove(Product product) {
-    }
-
     public List<Store> getStores() {
         return storesRepo.findAll();
     }
@@ -92,5 +89,11 @@ public class ProductsStorage {
 
     public Sale getInput(Long productId, Long storeId, Date date) {
         return salesRepository.findByProductIdAndStoreIdAndDateAndCountLessThan(productId, storeId, date, Long.valueOf(0));
+    }
+
+    public void removeByCode(String code) {
+        Product product = productsRepository.findByCode(code);
+        salesRepository.removeByProductId(product.getId());
+        productsRepository.removeById(product.getId());
     }
 }

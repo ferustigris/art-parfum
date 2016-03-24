@@ -19,4 +19,6 @@ public interface SalesRepository extends Repository<Sale, Long> {
 
     @Query(value = "select SUM(count) FROM sales WHERE product_id=:productId AND store_id=:storeId", nativeQuery = true)
     Long getSalesSummary(@Param("productId") Long productId, @Param("storeId") Long storeId);
+
+    void removeByProductId(Long id);
 }

@@ -10,4 +10,6 @@ public interface ProductsRepository extends Repository<Product, Long> {
     <S extends Product> S save(Product p);
     Product findByCode(String code);
     Product findById(Long productId);
+
+    void removeById(Long id);
 }

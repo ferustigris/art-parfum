@@ -10,6 +10,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedList;
@@ -30,6 +34,34 @@ public class ProductsController {
     public List<ProductData> getSales(@RequestParam("store") Long store, @RequestParam("from") Long from, @RequestParam("to") Long to) {
         log.debug("get sales request for " + store);
         return getSalesForProduct(store, from, to);
+    }
+
+    @RequestMapping("/data/export.json")
+    @ResponseBody()
+    public String export(@RequestParam("date") Long date) throws IOException {
+//        exportFromCsv(date, new BufferedReader(new FileReader("t.csv")));
+//        exportFromCsv(date, new BufferedReader(new FileReader("v.csv")));
+//        exportFromCsv(date, new BufferedReader(new FileReader("s.csv")));
+        return "";
+    }
+
+    private void exportFromCsv(@RequestParam("date") Long date, BufferedReader br) throws IOException {
+        Date d = new Date(date);
+        String line;
+        while ((line = br.readLine()) != null) {
+
+            // use comma as separator
+            String[] productInfo = line.split(",");
+
+            System.out.println("Product [code= " + productInfo[1]
+                    + " , count=" + productInfo[2] + "]");
+            Product product = new Product(productInfo[1], "");
+            log.debug("request for creating new product " + product);
+            product = storage.createNew(product);
+
+            storage.updateInput(product.getId(), Long.valueOf(productInfo[0]), d, -Long.valueOf(productInfo[2]));
+
+        }
     }
 
     private List<ProductData> getSalesForProduct(Long store, Long from, Long to) {
@@ -91,8 +123,7 @@ public class ProductsController {
     @ResponseBody
     public String removeProduct(@RequestParam("code") String code) {
         log.debug("request for removing product with code " + code);
-        Product product = new Product(code, "");
-        storage.remove(product);
+        storage.removeByCode(code);
         return "";
     }
 

@@ -51,10 +51,12 @@ function loadProducts(store, filter, summaryGrid) {
                     summaryGrid.prises[index] -= sale.count * $('#new-product-start-prise').val();
                 }
             });
-            console.log(item);
+            //console.log(item);
             item.store = store;
-            grid.jsGrid("insertItem", item);
-            summaryGrid.jsGrid("refresh");
+            grid.jsGrid("insertItem", item).done(function() {
+                summaryGrid.jsGrid("refresh");
+                grid.jsGrid("refresh");
+            });
         });
     }, {
         'from': getDateInThePast($('#period').val()).getTime()-1,
@@ -275,6 +277,9 @@ $(document).ready(function () {
             "Save": {
                 text: 'ok',
                 click: function() {
+                    Cookies.set('start_prise', $('#new-product-start-prise').val());
+                    Cookies.set('prise', $('#new-product-prise').val());
+
                     optionsDialog.dialog( "close" );
                 }
             },
@@ -320,6 +325,8 @@ $(document).ready(function () {
             salesTypeEl.selectmenu({change: onParamChanged});
 
             $('#options').button().on( "click", function() {
+                $('#new-product-start-prise').val(Cookies.get('start_prise'));
+                $('#new-product-prise').val(Cookies.get('prise'));
                 optionsDialog.dialog("open");
             });
 

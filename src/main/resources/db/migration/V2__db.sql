@@ -27,3 +27,5 @@ INSERT INTO Stores VALUES(
 INSERT INTO Stores VALUES(
     3, 'Тверь'
 );
+
+
