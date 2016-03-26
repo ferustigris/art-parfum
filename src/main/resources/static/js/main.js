@@ -29,10 +29,12 @@ function getDaysBetween(d) {
 
 function loadProducts(store, filter, summaryGrid) {
     var grid = this;
+    var d = $.Deferred();
     console.log("filter.type=" + filter.type);
-    return asyncReceive("data/sales.json", function (result) {
+    asyncReceive("data/sales.json", function (result) {
         console.log('Products have been received');
         var products = $.parseJSON(result);
+        var items = [];
         products.forEach(function(item) {
             item.sales.forEach(function(sale) {
                 var i = getDaysBetween(sale.date);
@@ -53,16 +55,15 @@ function loadProducts(store, filter, summaryGrid) {
             });
             //console.log(item);
             item.store = store;
-            grid.jsGrid("insertItem", item).done(function() {
-                summaryGrid.jsGrid("refresh");
-                grid.jsGrid("refresh");
-            });
+            items.push(item);
         });
+        d.resolve(items);
     }, {
         'from': getDateInThePast($('#period').val()).getTime()-1,
         'to': getCurrentDate().getTime()+1,
         'store': store
     });
+    return d.promise();
 }
 
 function createNewItem(grid, item) {
@@ -256,6 +257,9 @@ function loadStore(grid, store, datePeriod, type) {
         onItemUpdating: function(args) {
             console.log("onItemUpdating");
             onUpdateProduct(args.item, args.previousItem, datePeriod, type, summary);
+        },
+        onDataLoaded: function() {
+            summary.jsGrid("refresh");
         }
     });
 
